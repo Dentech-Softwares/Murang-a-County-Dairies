@@ -1,10 +1,85 @@
 <?php
+require_once '../includes/db_connect.php';
+
+// Handle CSV Export
+if (isset($_GET['export'])) {
+    session_start();
+    $type = $_GET['export'];
+    $dairy_id = $_SESSION['dairy_id'];
+    $date = $_GET['date'] ?? date('Y-m-d');
+    $farmer_id = $_GET['farmer_id'] ?? null;
+    
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="' . $type . '_report_' . $date . '.csv"');
+    
+    $output = fopen('php://output', 'w');
+    
+    if ($type == 'collections') {
+        fputcsv($output, ['Milk Collection Report for ' . $date]);
+        fputcsv($output, ['#', 'Date', 'Farmer', 'Quantity (L)', 'Total (Kes)', 'Served By']);
+        
+        $query = "SELECT mc.*, f.full_name as farmer_name, a.full_name as attendant_name 
+                  FROM milk_collection mc 
+                  JOIN farmers f ON mc.farmer_id = f.id 
+                  LEFT JOIN attendants a ON mc.attendant_id = a.id
+                  WHERE mc.dairy_id = ? AND DATE(mc.date_collected) = ?";
+        $params = [$dairy_id, $date];
+        
+        if ($farmer_id) {
+            $query .= " AND mc.farmer_id = ?";
+            $params[] = $farmer_id;
+        }
+        $query .= " ORDER BY mc.date_collected ASC";
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $i = 1;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [
+                $i++,
+                date('Y-m-d H:i', strtotime($row['date_collected'])),
+                $row['farmer_name'],
+                number_format($row['quantity'], 2),
+                number_format($row['total_price'], 2),
+                $row['attendant_name'] ?: 'System'
+            ]);
+        }
+        
+    } elseif ($type == 'sales') {
+        fputcsv($output, ['Milk Sales Report for ' . $date]);
+        fputcsv($output, ['#', 'Date', 'Sold To', 'Quantity (L)', 'Total (Kes)', 'Sold By']);
+        
+        $query = "SELECT ms.*, a.full_name as attendant_name 
+                  FROM milk_sales ms 
+                  LEFT JOIN attendants a ON ms.attendant_id = a.id
+                  WHERE ms.dairy_id = ? AND DATE(ms.date_sold) = ?";
+        $params = [$dairy_id, $date];
+        $query .= " ORDER BY ms.date_sold ASC";
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $i = 1;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [
+                $i++,
+                date('Y-m-d H:i', strtotime($row['date_sold'])),
+                $row['sold_to'],
+                number_format($row['quantity'], 2),
+                number_format($row['total_price'], 2),
+                $row['attendant_name'] ?: 'System'
+            ]);
+        }
+    }
+    fclose($output);
+    exit();
+}
+
 require_once '../includes/attendant_header.php';
 
 $dairy_id = $_SESSION['dairy_id'];
 
 // Get filters
-$date_filter = $_GET['date'] ?? '';
+$date_filter = $_GET['date'] ?? date('Y-m-d');
 $farmer_filter = $_GET['farmer_id'] ?? '';
 
 // Get all farmers for filter dropdown
@@ -77,15 +152,15 @@ $success = $_GET['success'] ?? null;
 <?php endif; ?>
 
 <!-- Filter Section -->
-<div class="stat-card" style="margin-bottom: 2rem; text-align: left;">
-    <form action="" method="GET" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
-        <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
-            <label>Filter by Date</label>
-            <input type="date" name="date" value="<?php echo $date_filter; ?>" style="padding: 0.6rem;">
+<div class="stat-card" style="margin-bottom: 2rem; text-align: left; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow);">
+    <form action="" method="GET" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+        <div class="form-group" style="margin: 0; flex: 0 1 200px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Date</label>
+            <input type="date" name="date" value="<?php echo $date_filter; ?>" onchange="this.form.submit()" style="padding: 0.6rem; border-radius: 6px; border: 1px solid #ddd; width: 100%; cursor: pointer;">
         </div>
-        <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
-            <label>Filter by Farmer</label>
-            <select name="farmer_id" style="padding: 0.6rem; width: 100%; border: 1px solid #ddd; border-radius: 6px; background: white;">
+        <div class="form-group" style="margin: 0; flex: 0 1 250px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Farmer</label>
+            <select name="farmer_id" onchange="this.form.submit()" style="padding: 0.6rem; width: 100%; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
                 <option value="">All Farmers</option>
                 <?php foreach ($all_farmers as $f): ?>
                     <option value="<?php echo $f['id']; ?>" <?php echo $farmer_filter == $f['id'] ? 'selected' : ''; ?>>
@@ -94,16 +169,22 @@ $success = $_GET['success'] ?? null;
                 <?php endforeach; ?>
             </select>
         </div>
-        <div style="display: flex; gap: 0.8rem;">
-            <button type="submit" class="btn btn-primary" style="width: auto; padding: 0.6rem 1.5rem;">Filter</button>
-            <a href="milk_records.php" class="btn btn-secondary" style="width: auto; padding: 0.6rem 1.5rem; text-decoration: none; text-align: center;">Reset</a>
-        </div>
     </form>
 </div>
 
 <div class="row" style="margin-bottom: 3rem;">
-    <h3>Milk Collections History</h3>
-    <table class="data-table">
+    <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
+        <div onclick="toggleTable('coll-collapsible', 'coll-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i id="coll-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                <h3 style="margin: 0;">Milk Collections History</h3>
+            </div>
+            <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+                <i class="fas fa-download"></i> Download CSV
+            </a>
+        </div>
+        <div id="coll-collapsible" style="overflow: hidden;">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>#</th>
@@ -119,9 +200,12 @@ $success = $_GET['success'] ?? null;
             <?php if (empty($collections)): ?>
                 <tr><td colspan="7" style="text-align: center;">No collections recorded.</td></tr>
             <?php else: ?>
-                <?php $i = 1; foreach ($collections as $c): ?>
-                    <tr>
-                        <td><?php echo $i++; ?></td>
+                <?php 
+                foreach ($collections as $index => $c): 
+                    $is_extra = $index >= 5;
+                ?>
+                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                        <td><?php echo $index + 1; ?></td>
                         <td><?php echo date('Y-m-d H:i', strtotime($c['date_collected'])); ?></td>
                         <td><?php echo $c['farmer_name']; ?></td>
                         <td><?php echo number_format($c['quantity'], 2); ?></td>
@@ -138,11 +222,23 @@ $success = $_GET['success'] ?? null;
             <?php endif; ?>
         </tbody>
     </table>
+    </div>
+</div>
 </div>
 
 <div class="row">
-    <h3>Milk Sales History</h3>
-    <table class="data-table">
+    <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
+        <div onclick="toggleTable('sales-collapsible', 'sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                <h3 style="margin: 0;">Milk Sales History</h3>
+            </div>
+            <a href="?export=sales&date=<?php echo $date_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+                <i class="fas fa-download"></i> Download CSV
+            </a>
+        </div>
+        <div id="sales-collapsible" style="overflow: hidden;">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>#</th>
@@ -158,9 +254,12 @@ $success = $_GET['success'] ?? null;
             <?php if (empty($sales)): ?>
                 <tr><td colspan="7" style="text-align: center;">No sales recorded.</td></tr>
             <?php else: ?>
-                <?php $i = 1; foreach ($sales as $s): ?>
-                    <tr>
-                        <td><?php echo $i++; ?></td>
+                <?php 
+                foreach ($sales as $index => $s): 
+                    $is_extra = $index >= 5;
+                ?>
+                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                        <td><?php echo $index + 1; ?></td>
                         <td><?php echo date('Y-m-d H:i', strtotime($s['date_sold'])); ?></td>
                         <td><?php echo $s['sold_to']; ?></td>
                         <td><?php echo number_format($s['quantity'], 2); ?></td>
@@ -177,6 +276,8 @@ $success = $_GET['success'] ?? null;
             <?php endif; ?>
         </tbody>
     </table>
+    </div>
+</div>
 </div>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

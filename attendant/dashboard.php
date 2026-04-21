@@ -35,21 +35,21 @@ $today_sales = $stmt->fetch();
 
 $profit = ($today_sales['revenue'] ?: 0) - ($today_coll['cost'] ?: 0);
 
-// Recent Activities
+// Recent Activities (Today Only)
 $stmt = $pdo->prepare("(SELECT 'collection' as type, mc.id, mc.quantity, mc.total_price, mc.date_collected as activity_date, f.full_name as detail, a.full_name as attendant_name 
                        FROM milk_collection mc 
                        JOIN farmers f ON mc.farmer_id = f.id 
                        LEFT JOIN attendants a ON mc.attendant_id = a.id
-                       WHERE mc.dairy_id = ? 
+                       WHERE mc.dairy_id = ? AND DATE(mc.date_collected) = ?
                        ORDER BY mc.date_collected DESC LIMIT 10)
                       UNION ALL
                       (SELECT 'sale' as type, ms.id, ms.quantity, ms.total_price, ms.date_sold as activity_date, ms.sold_to as detail, a.full_name as attendant_name 
                        FROM milk_sales ms 
                        LEFT JOIN attendants a ON ms.attendant_id = a.id
-                       WHERE ms.dairy_id = ? 
+                       WHERE ms.dairy_id = ? AND DATE(ms.date_sold) = ?
                        ORDER BY ms.date_sold DESC LIMIT 10)
                       ORDER BY activity_date DESC LIMIT 10");
-$stmt->execute([$dairy_id, $dairy_id]);
+$stmt->execute([$dairy_id, $today, $dairy_id, $today]);
 $activities = $stmt->fetchAll();
 
 $success = $_GET['success'] ?? null;
@@ -100,15 +100,15 @@ $success = $_GET['success'] ?? null;
     <div class="col" style="flex: 1;">
         <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
             <!-- Header/Dropdown Toggle -->
-            <div onclick="toggleTable()" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+            <div onclick="toggleTable('collapsible-table', 'toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <i id="toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-                    <h3 style="margin: 0;">Recent Activities</h3>
+                    <i id="toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                    <h3 style="margin: 0;">Recent Activities (Today)</h3>
                 </div>
             </div>
 
             <!-- Table Content (Collapsible) -->
-            <div id="collapsible-table" style="max-height: 1000px; transition: max-height 0.3s ease-out; overflow: hidden;">
+            <div id="collapsible-table" style="overflow: hidden;">
                 <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
                     <thead>
                         <tr>
@@ -124,11 +124,14 @@ $success = $_GET['success'] ?? null;
                     </thead>
                     <tbody>
                         <?php if (empty($activities)): ?>
-                            <tr><td colspan="8" style="text-align: center;">No activities recorded yet.</td></tr>
+                            <tr><td colspan="8" style="text-align: center;">No activities recorded yet today.</td></tr>
                         <?php else: ?>
-                            <?php $i = 1; foreach ($activities as $row): ?>
-                                <tr>
-                                    <td><?php echo $i++; ?></td>
+                            <?php 
+                            foreach ($activities as $index => $row): 
+                                $is_extra = $index >= 5;
+                            ?>
+                                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                    <td><?php echo $index + 1; ?></td>
                                     <td>
                                         <span class="badge" style="background: <?php echo $row['type'] == 'collection' ? '#e8f5e9; color: #2e7d32;' : '#e3f2fd; color: #1976d2;'; ?>">
                                             <?php echo ucfirst($row['type']); ?>
@@ -154,19 +157,5 @@ $success = $_GET['success'] ?? null;
         </div>
     </div>
 </div>
-
-<script>
-function toggleTable() {
-    const tableDiv = document.getElementById('collapsible-table');
-    const icon = document.getElementById('toggle-icon');
-    if (tableDiv.style.maxHeight === "0px") {
-        tableDiv.style.maxHeight = "1000px";
-        icon.style.transform = "rotate(0deg)";
-    } else {
-        tableDiv.style.maxHeight = "0px";
-        icon.style.transform = "rotate(-90deg)";
-    }
-}
-</script>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

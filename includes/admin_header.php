@@ -122,6 +122,12 @@ if (!isset($_SESSION['admin_id'])) {
         .data-table tr:last-child td {
             border-bottom: none;
         }
+        .extra-row {
+            display: none;
+        }
+        .expanded .extra-row {
+            display: table-row;
+        }
         .badge {
             padding: 0.3rem 0.6rem;
             border-radius: 20px;
@@ -160,7 +166,7 @@ if (!isset($_SESSION['admin_id'])) {
             padding: 1rem;
             margin-top: 10px;
         }
-        .profile-dropdown:hover .dropdown-content {
+        .dropdown-content.show {
             display: block;
         }
         .dropdown-info {
@@ -207,14 +213,16 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
             <h2 style="margin-top: 0.5rem;">Head Office</h2>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="dairies.php"><i class="fas fa-industry"></i> Dairies</a></li>
-                <li><a href="farmers.php"><i class="fas fa-users"></i> Farmers</a></li>
-                <li><a href="milk_records.php"><i class="fas fa-clipboard-list"></i> Milk Records</a></li>
-                <li><a href="payments.php"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
-                <li><a href="sales.php"><i class="fas fa-shopping-cart"></i> Sold Milk</a></li>
-                <li><a href="reports.php"><i class="fas fa-file-alt"></i> Reports</a></li>
-                <li><a href="settings.php"><i class="fas fa-cog"></i> Settings</a></li>
+                <?php $current_page = basename($_SERVER['PHP_SELF']); ?>
+                <li><a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="dairies.php" class="<?php echo $current_page == 'dairies.php' ? 'active' : ''; ?>"><i class="fas fa-industry"></i> Dairies</a></li>
+                <li><a href="attendants.php" class="<?php echo $current_page == 'attendants.php' ? 'active' : ''; ?>"><i class="fas fa-user-tie"></i> Attendants</a></li>
+                <li><a href="farmers.php" class="<?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>"><i class="fas fa-users"></i> Farmers</a></li>
+                <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-clipboard-list"></i> Milk Records</a></li>
+                <li><a href="payments.php" class="<?php echo $current_page == 'payments.php' ? 'active' : ''; ?>"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                <li><a href="sales.php" class="<?php echo $current_page == 'sales.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart"></i> Sold Milk</a></li>
+                <li><a href="reports.php" class="<?php echo $current_page == 'reports.php' ? 'active' : ''; ?>"><i class="fas fa-file-alt"></i> Reports</a></li>
+                <li><a href="settings.php" class="<?php echo $current_page == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
         </div>
         <div class="main-content">
@@ -226,7 +234,7 @@ if (!isset($_SESSION['admin_id'])) {
                 </div>
                 <div class="user-info">
                     <div class="profile-dropdown">
-                        <div class="profile-trigger">
+                        <div class="profile-trigger" onclick="toggleDropdown(event)">
                             <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
                             <div style="text-align: left;">
                                 <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['admin_name']; ?></div>
@@ -236,7 +244,7 @@ if (!isset($_SESSION['admin_id'])) {
                             </div>
                             <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px;"></i>
                         </div>
-                        <div class="dropdown-content">
+                        <div id="profileDropdown" class="dropdown-content">
                             <div class="dropdown-info">
                                 <p>Full Name</p>
                                 <strong><?php echo $_SESSION['admin_name']; ?></strong>
@@ -257,6 +265,37 @@ if (!isset($_SESSION['admin_id'])) {
                 </div>
             </div>
             <script>
+                function toggleDropdown(event) {
+                    event.stopPropagation();
+                    document.getElementById("profileDropdown").classList.toggle("show");
+                }
+
+                function toggleTable(containerId, iconId) {
+                    const container = document.getElementById(containerId);
+                    const icon = document.getElementById(iconId);
+                    
+                    container.classList.toggle('expanded');
+                    
+                    if (container.classList.contains('expanded')) {
+                        icon.style.transform = "rotate(90deg)";
+                    } else {
+                        icon.style.transform = "rotate(0deg)";
+                    }
+                }
+
+                // Close the dropdown if the user clicks outside of it
+                window.onclick = function(event) {
+                    if (!event.target.closest('.profile-dropdown')) {
+                        const dropdowns = document.getElementsByClassName("dropdown-content");
+                        for (let i = 0; i < dropdowns.length; i++) {
+                            const openDropdown = dropdowns[i];
+                            if (openDropdown.classList.contains('show')) {
+                                openDropdown.classList.remove('show');
+                            }
+                        }
+                    }
+                }
+
                 function updateTime() {
                     const timeSpan = document.getElementById('current-time');
                     if (timeSpan) {

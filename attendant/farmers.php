@@ -1,4 +1,34 @@
 <?php
+require_once '../includes/db_connect.php';
+
+// Handle CSV Export
+if (isset($_GET['export'])) {
+    session_start();
+    $dairy_id = $_SESSION['dairy_id'];
+    
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="farmers_list_' . date('Y-m-d') . '.csv"');
+    
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['Registered Farmers List']);
+    fputcsv($output, ['#', 'Farmer No.', 'Full Name', 'Phone', 'Registered On']);
+    
+    $stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? ORDER BY farmer_number ASC");
+    $stmt->execute([$dairy_id]);
+    $i = 1;
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        fputcsv($output, [
+            $i++,
+            $row['farmer_number'] ?? 'N/A',
+            $row['full_name'],
+            $row['phone'],
+            date('Y-m-d', strtotime($row['created_at']))
+        ]);
+    }
+    fclose($output);
+    exit();
+}
+
 require_once '../includes/attendant_header.php';
 
 $success = '';
@@ -73,8 +103,21 @@ $farmers = $stmt->fetchAll();
     </form>
 </div>
 
-<h3>Registered Farmers</h3>
-<table class="data-table">
+<div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
+    <!-- Header/Dropdown Toggle -->
+    <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <h3 style="margin: 0;">Registered Farmers</h3>
+        </div>
+        <a href="?export=1" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+            <i class="fas fa-download"></i> Download CSV
+        </a>
+    </div>
+
+    <!-- Table Content (Collapsible) -->
+    <div id="farmers-collapsible" style="overflow: hidden;">
+        <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
             <th>#</th>
@@ -88,9 +131,12 @@ $farmers = $stmt->fetchAll();
         <?php if (empty($farmers)): ?>
             <tr><td colspan="5" style="text-align: center;">No farmers registered yet.</td></tr>
         <?php else: ?>
-            <?php $i = 1; foreach ($farmers as $f): ?>
-                <tr>
-                    <td><?php echo $i++; ?></td>
+            <?php 
+            foreach ($farmers as $index => $f): 
+                $is_extra = $index >= 5;
+            ?>
+                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                    <td><?php echo $index + 1; ?></td>
                     <td><strong><?php echo $f['farmer_number'] ?? 'N/A'; ?></strong></td>
                     <td><?php echo $f['full_name']; ?></td>
                     <td><?php echo $f['phone']; ?></td>
@@ -100,5 +146,7 @@ $farmers = $stmt->fetchAll();
         <?php endif; ?>
     </tbody>
 </table>
+</div>
+</div>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

@@ -131,6 +131,12 @@ $dairy_name = $stmt->fetchColumn();
             background-color: #f8f9fa;
             font-weight: 600;
         }
+        .extra-row {
+            display: none;
+        }
+        .expanded .extra-row {
+            display: table-row;
+        }
         .badge {
             padding: 0.3rem 0.6rem;
             border-radius: 20px;
@@ -168,7 +174,7 @@ $dairy_name = $stmt->fetchColumn();
             padding: 1rem;
             margin-top: 10px;
         }
-        .profile-dropdown:hover .dropdown-content {
+        .dropdown-content.show {
             display: block;
         }
         .dropdown-info {
@@ -208,11 +214,12 @@ $dairy_name = $stmt->fetchColumn();
             <h2 style="margin-top: 0.5rem;"><?php echo $dairy_name; ?></h2>
             <p>Murang'a County Attendant Portal</p>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="farmers.php"><i class="fas fa-users"></i> Farmers</a></li>
-                <li><a href="record_milk.php"><i class="fas fa-plus-circle"></i> Record Milk</a></li>
-                <li><a href="sell_milk.php"><i class="fas fa-hand-holding-usd"></i> Sell Milk</a></li>
-                <li><a href="milk_records.php"><i class="fas fa-history"></i> Milk Records</a></li>
+                <?php $current_page = basename($_SERVER['PHP_SELF']); ?>
+                <li><a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="farmers.php" class="<?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>"><i class="fas fa-users"></i> Farmers</a></li>
+                <li><a href="record_milk.php" class="<?php echo $current_page == 'record_milk.php' ? 'active' : ''; ?>"><i class="fas fa-plus-circle"></i> Record Milk</a></li>
+                <li><a href="sell_milk.php" class="<?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd"></i> Sell Milk</a></li>
+                <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-history"></i> Milk Records</a></li>
                 <li style="margin-top: 2rem;"><a href="../includes/logout.php" style="color: #ff7675;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>
@@ -225,7 +232,7 @@ $dairy_name = $stmt->fetchColumn();
                 </div>
                 <div class="user-info">
                     <div class="profile-dropdown">
-                        <div class="profile-trigger">
+                        <div class="profile-trigger" onclick="toggleDropdown(event)">
                             <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
                             <div style="text-align: left;">
                                 <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['attendant_name']; ?></div>
@@ -233,7 +240,7 @@ $dairy_name = $stmt->fetchColumn();
                             </div>
                             <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px;"></i>
                         </div>
-                        <div class="dropdown-content">
+                        <div id="profileDropdown" class="dropdown-content">
                             <div class="dropdown-info">
                                 <p>Full Name</p>
                                 <strong><?php echo $_SESSION['attendant_name']; ?></strong>
@@ -250,6 +257,37 @@ $dairy_name = $stmt->fetchColumn();
                 </div>
             </div>
             <script>
+                function toggleDropdown(event) {
+                    event.stopPropagation();
+                    document.getElementById("profileDropdown").classList.toggle("show");
+                }
+
+                function toggleTable(containerId, iconId) {
+                    const container = document.getElementById(containerId);
+                    const icon = document.getElementById(iconId);
+                    
+                    container.classList.toggle('expanded');
+                    
+                    if (container.classList.contains('expanded')) {
+                        icon.style.transform = "rotate(90deg)";
+                    } else {
+                        icon.style.transform = "rotate(0deg)";
+                    }
+                }
+
+                // Close the dropdown if the user clicks outside of it
+                window.onclick = function(event) {
+                    if (!event.target.closest('.profile-dropdown')) {
+                        const dropdowns = document.getElementsByClassName("dropdown-content");
+                        for (let i = 0; i < dropdowns.length; i++) {
+                            const openDropdown = dropdowns[i];
+                            if (openDropdown.classList.contains('show')) {
+                                openDropdown.classList.remove('show');
+                            }
+                        }
+                    }
+                }
+
                 function updateTime() {
                     const timeSpan = document.getElementById('current-time');
                     if (timeSpan) {

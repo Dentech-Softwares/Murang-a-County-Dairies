@@ -139,8 +139,18 @@ if (isset($_GET['success'])) $success = $_GET['success'];
     </div>
 </div>
 
-<h3>All Dairies</h3>
-<table class="data-table">
+<div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-top: 2rem;">
+    <!-- Header/Dropdown Toggle -->
+    <div onclick="toggleTable('dairies-collapsible', 'dairies-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i id="dairies-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <h3 style="margin: 0;">All Dairies</h3>
+        </div>
+    </div>
+
+    <!-- Table Content (Collapsible) -->
+    <div id="dairies-collapsible" style="overflow: hidden;">
+        <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
             <th>#</th>
@@ -152,20 +162,29 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         </tr>
     </thead>
     <tbody>
-        <?php $i = 1; foreach ($dairies as $d): ?>
-            <tr>
-                <td><?php echo $i++; ?></td>
-                <td><?php echo $d['name']; ?></td>
-                <td><?php echo $d['location']; ?></td>
-                <td><?php echo $d['attendant_names'] ?: '<em>No attendant assigned</em>'; ?></td>
-                <td><?php echo $d['attendant_phones'] ?: '<em>N/A</em>'; ?></td>
-                <td>
-                    <a href="?edit=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
-                    <a href="?delete=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
+        <?php if (empty($dairies)): ?>
+            <tr><td colspan="6" style="text-align: center;">No dairies registered yet.</td></tr>
+        <?php else: ?>
+            <?php 
+            foreach ($dairies as $index => $d): 
+                $is_extra = $index >= 5;
+            ?>
+                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                    <td><?php echo $index + 1; ?></td>
+                    <td><?php echo $d['name']; ?></td>
+                    <td><?php echo $d['location']; ?></td>
+                    <td><?php echo $d['attendant_names'] ?: '<em>No attendant assigned</em>'; ?></td>
+                    <td><?php echo $d['attendant_phones'] ?: '<em>N/A</em>'; ?></td>
+                    <td>
+                        <a href="?edit=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
+                        <a href="?delete=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </tbody>
 </table>
+</div>
+</div>
 
 <?php require_once '../includes/admin_footer.php'; ?>
