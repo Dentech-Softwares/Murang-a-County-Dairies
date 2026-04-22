@@ -26,7 +26,7 @@ $farmers = $stmt->fetchAll();
         <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
-            <th>#</th>
+            <th>S/N</th>
             <th>Farmer No.</th>
             <th>Full Name</th>
             <th>Phone</th>

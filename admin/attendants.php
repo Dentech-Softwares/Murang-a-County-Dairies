@@ -168,7 +168,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>S/N</th>
                     <th>Full Name</th>
                     <th>Phone</th>
                     <th>Dairy</th>

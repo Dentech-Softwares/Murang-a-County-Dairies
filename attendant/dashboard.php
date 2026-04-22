@@ -112,7 +112,7 @@ $success = $_GET['success'] ?? null;
                 <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>S/N</th>
                             <th>Type</th>
                             <th>Detail</th>
                             <th>Quantity (L)</th>

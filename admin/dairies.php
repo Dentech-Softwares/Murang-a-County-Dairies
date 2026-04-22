@@ -153,7 +153,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
-            <th>#</th>
+            <th>S/N</th>
             <th>Name</th>
             <th>Location</th>
             <th>Attendant(s) in Charge</th>

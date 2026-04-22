@@ -160,7 +160,7 @@ $monthly_profit = $m_rev - $m_cost;
                 <table class="data-table" style="box-shadow: none; border-radius: 0;">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>S/N</th>
                     <th>Dairy Name</th>
                     <th>Total Quantity (L)</th>
                     <th>Total Amount (Kes)</th>
@@ -205,7 +205,7 @@ $monthly_profit = $m_rev - $m_cost;
                 <table class="data-table" style="box-shadow: none; border-radius: 0;">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>S/N</th>
                     <th>Dairy Name</th>
                     <th>Total Quantity (L)</th>
                     <th>Total Amount (Kes)</th>

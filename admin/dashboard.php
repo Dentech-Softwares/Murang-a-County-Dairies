@@ -75,7 +75,7 @@ $recent_collections = $stmt->fetchAll();
                 <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>S/N</th>
                             <th>Date</th>
                             <th>Dairy Name</th>
                             <th>Total Quantity (L)</th>

@@ -28,7 +28,7 @@ $sales = $stmt->fetchAll();
         <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
-            <th>#</th>
+            <th>S/N</th>
             <th>Date</th>
             <th>Dairy</th>
             <th>Sold To</th>
