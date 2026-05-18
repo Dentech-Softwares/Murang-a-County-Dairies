@@ -36,6 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Change Password - Murang'a County Dairy</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container" style="max-width: 380px; padding: 2rem; margin: 3rem auto;">

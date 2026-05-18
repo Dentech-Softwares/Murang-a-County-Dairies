@@ -54,6 +54,15 @@ if (isset($_GET['error']) && $_GET['error'] == 'logged_out') {
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
 </head>
 <body style="background: #f8f9fa; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px;">
     <div class="login-container" style="max-width: 380px; padding: 2.2rem; margin: 0; width: 100%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06);">

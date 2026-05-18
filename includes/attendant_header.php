@@ -49,7 +49,7 @@ $dairy_name = $stmt->fetchColumn();
             width: 260px;
             background-color: var(--primary-dark); /* Deeper Forest Green */
             border-right: none;
-            padding: 0.7rem 0;
+            padding: 2rem 0;
             display: flex;
             flex-direction: column;
             box-shadow: 2px 0 10px rgba(0,0,0,0.02);
@@ -117,6 +117,18 @@ $dairy_name = $stmt->fetchColumn();
             padding: 2.5rem;
             background-color: #f4f7f6; /* Subtle contrast from sidebar and cards */
             max-width: 100%;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .top-bar {
             display: flex;

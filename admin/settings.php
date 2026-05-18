@@ -107,7 +107,7 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
                     <td data-label="Phone"><?php echo $a['phone']; ?></td>
                     <td data-label="Dairy"><?php echo $a['dairy_name']; ?></td>
                     <td data-label="Action">
-                        <a href="?delete_attendant=<?php echo $a['id']; ?>" class="btn btn-primary" style="background: #e74c3c; width: auto; padding: 0.5rem 1rem;" onclick="return confirm('Are you sure you want to delete this account?')">Delete</a>
+                        <a href="?delete_attendant=<?php echo $a['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure you want to delete this account?')"><i class="fas fa-trash"></i></a>
                     </td>
                 </tr>
             <?php endforeach; ?>

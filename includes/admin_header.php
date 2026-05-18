@@ -109,6 +109,18 @@ if (isset($pdo) && isset($_SESSION['admin_id']) && isset($_SESSION['current_sess
             flex: 1;
             padding: 2rem;
             background-color: #f4f7f6; /* Subtle contrast from sidebar and cards */
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         /* Responsive Grid Classes */

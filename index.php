@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         :root {
             --primary-green: #2ecc71;
             --dark-green: #27ae60;
@@ -26,6 +37,11 @@
             background-color: var(--bg-light);
             color: var(--text-dark);
             line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .page-animate {
+            animation: fadeInUp 0.8s ease-out forwards;
         }
 
         /* Navbar */
@@ -403,6 +419,7 @@
     </style>
 </head>
 <body>
+    <div class="page-animate">
 
     <nav>
         <a href="index.php" class="nav-logo">
@@ -518,5 +535,6 @@
         </div>
     </footer>
 
+    </div>
 </body>
 </html>
