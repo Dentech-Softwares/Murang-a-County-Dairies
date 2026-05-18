@@ -54,22 +54,23 @@ if (isset($_POST['record_sale'])) {
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div class="stat-card" style="text-align: left; max-width: 500px; margin-bottom: 2rem;">
-    <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <p style="color: #1976d2; margin: 0;">Available Stock: <strong><?php echo number_format($available_stock, 2); ?> Litres</strong></p>
+<div class="content-card" style="text-align: left; max-width: 600px; margin-bottom: 2rem;">
+    <div style="background: #e3f2fd; padding: 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid #1976d2;">
+        <p style="color: #1976d2; margin: 0; font-size: 1.1rem; font-weight: 700;">Available Stock: <?php echo number_format($available_stock, 2); ?> Litres</p>
         <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 0.9rem;">Selling Price: <strong>Kes <?php echo $selling_price; ?> / L</strong></p>
     </div>
+    
     <form action="" method="POST">
         <div class="form-group">
             <label>Sold To (Firm Name)</label>
-            <input type="text" name="sold_to" required placeholder="e.g. Brookside, KCC">
+            <input type="text" name="sold_to" required placeholder="e.g. Brookside, KCC" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" max="<?php echo $available_stock; ?>" required>
-            <small style="color: #666;">Maximum allowed: <?php echo number_format($available_stock, 2); ?> L</small>
+            <input type="number" name="quantity" step="0.01" max="<?php echo $available_stock; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+            <small style="color: #888; display: block; margin-top: 5px;">Maximum allowed: <?php echo number_format($available_stock, 2); ?> L</small>
         </div>
-        <button type="submit" name="record_sale" class="btn btn-primary" style="background-color: var(--primary-color);">Record Sale</button>
+        <button type="submit" name="record_sale" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: 600; background-color: var(--primary-color);">Record Sale</button>
     </form>
 </div>
 

@@ -23,61 +23,63 @@ $collections = $stmt->fetchAll();
 
 <h2>Milk Collection Records</h2>
 
-<div class="stats-grid">
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
     <?php foreach ($dairy_totals as $dt): ?>
-        <div class="stat-card">
-            <h3><?php echo $dt['dairy_name']; ?></h3>
-            <div class="value"><?php echo number_format($dt['total_litres'] ?: 0, 2); ?> L</div>
-            <p style="font-size: 0.8rem; color: #666;"><?php echo $dt['total_collections']; ?> total records</p>
+        <div class="stat-card" style="padding: 1rem; text-align: center;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: #666;"><?php echo $dt['dairy_name']; ?></h3>
+            <div class="value" style="font-size: 1.4rem; color: var(--primary-color);"><?php echo number_format($dt['total_litres'] ?: 0, 2); ?> L</div>
+            <p style="font-size: 0.75rem; color: #888; margin-top: 0.3rem;"><?php echo $dt['total_collections']; ?> records</p>
         </div>
     <?php endforeach; ?>
 </div>
 
-<div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-top: 2rem;">
+<div class="content-card" style="padding: 0; overflow: hidden;">
     <!-- Header/Dropdown Toggle -->
-    <div onclick="toggleTable('milk-collapsible', 'milk-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+    <div onclick="toggleTable('milk-collapsible', 'milk-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <i id="milk-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-            <h3 style="margin: 0;">Today's Collection Summary (By Dairy)</h3>
+            <h3 style="margin: 0; font-size: 1.1rem;">Today's Collection Summary</h3>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="milk-collapsible" style="overflow: hidden;">
-        <table class="data-table" style="box-shadow: none; border-radius: 0;">
-    <thead>
-        <tr>
-            <th>S/N</th>
-            <th>Date</th>
-            <th>Dairy</th>
-            <th>Collections</th>
-            <th>Total Quantity (L)</th>
-            <th>Avg Rate (Kes)</th>
-            <th>Total Amount (Kes)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (empty($collections)): ?>
-            <tr><td colspan="7" style="text-align: center;">No milk collections recorded yet today.</td></tr>
-        <?php else: ?>
-            <?php 
-            foreach ($collections as $index => $c): 
-                $is_extra = $index >= 5;
-            ?>
-                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                    <td><?php echo $index + 1; ?></td>
-                    <td><?php echo date('Y-m-d', strtotime($c['collection_date'])); ?></td>
-                    <td><strong><?php echo $c['dairy_name']; ?></strong></td>
-                    <td><?php echo $c['collections_count']; ?></td>
-                    <td><?php echo number_format($c['total_quantity'], 2); ?></td>
-                    <td><?php echo number_format($c['avg_rate'], 2); ?></td>
-                    <td><strong><?php echo number_format($c['total_amount'], 2); ?></strong></td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </tbody>
-</table>
-</div>
+        <div class="table-container">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Date</th>
+                        <th>Dairy</th>
+                        <th>Collections</th>
+                        <th>Total Quantity (L)</th>
+                        <th>Avg Rate (Kes)</th>
+                        <th>Total Amount (Kes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($collections)): ?>
+                        <tr><td colspan="7" style="text-align: center;">No milk collections recorded yet today.</td></tr>
+                    <?php else: ?>
+                        <?php 
+                        foreach ($collections as $index => $c): 
+                            $is_extra = $index >= 5;
+                        ?>
+                            <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Date"><?php echo date('Y-m-d', strtotime($c['collection_date'])); ?></td>
+                                <td data-label="Dairy"><strong><?php echo $c['dairy_name']; ?></strong></td>
+                                <td data-label="Collections"><?php echo $c['collections_count']; ?></td>
+                                <td data-label="Quantity (L)"><?php echo number_format($c['total_quantity'], 2); ?></td>
+                                <td data-label="Avg Rate (Kes)"><?php echo number_format($c['avg_rate'], 2); ?></td>
+                                <td data-label="Total Amount (Kes)"><strong><?php echo number_format($c['total_amount'], 2); ?></strong></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <?php require_once '../includes/admin_footer.php'; ?>

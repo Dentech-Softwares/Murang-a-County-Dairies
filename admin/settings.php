@@ -52,8 +52,8 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
     <div class="alert alert-success"><?php echo $success; ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-    <div class="stat-card" style="text-align: left;">
+<div class="responsive-grid-equal" style="margin-bottom: 2rem;">
+    <div class="content-card" style="text-align: left;">
         <h3>Price Configuration</h3>
         <form action="" method="POST">
             <div class="form-group">
@@ -68,12 +68,12 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
         </form>
     </div>
 
-    <div class="stat-card" style="text-align: left;">
+    <div class="content-card" style="text-align: left;">
         <h3>Manage Dairy Names</h3>
         <form action="" method="POST">
             <div class="form-group">
                 <label>Select Dairy</label>
-                <select name="dairy_id" class="btn" style="background: white; border: 1px solid #ddd; color: #333; text-align: left;" required>
+                <select name="dairy_id" class="btn" style="background: white; border: 1px solid #ddd; color: #333; text-align: left; width: 100%; margin-bottom: 1rem;" required>
                     <?php foreach ($dairies as $d): ?>
                         <option value="<?php echo $d['id']; ?>"><?php echo $d['name']; ?></option>
                     <?php endforeach; ?>
@@ -88,30 +88,32 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
     </div>
 </div>
 
-<h3>Manage Attendant Accounts</h3>
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Dairy</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($attendants as $a): ?>
+<div class="content-card">
+    <h3>Manage Attendant Accounts</h3>
+    <div class="table-container">
+        <table class="data-table">
+        <thead>
             <tr>
-                <td><?php echo $a['full_name']; ?></td>
-                <td><?php echo $a['phone']; ?></td>
-                <td><?php echo $a['dairy_name']; ?></td>
-                <td>
-                    <a href="?delete_attendant=<?php echo $a['id']; ?>" class="btn btn-primary" 
-                       style="background: #e74c3c; padding: 0.3rem 0.6rem; font-size: 0.8rem;"
-                       onclick="return confirm('Are you sure you want to delete this account?')">Delete</a>
-                </td>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Dairy</th>
+                <th>Action</th>
             </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <?php foreach ($attendants as $a): ?>
+                <tr>
+                    <td data-label="Name"><?php echo $a['full_name']; ?></td>
+                    <td data-label="Phone"><?php echo $a['phone']; ?></td>
+                    <td data-label="Dairy"><?php echo $a['dairy_name']; ?></td>
+                    <td data-label="Action">
+                        <a href="?delete_attendant=<?php echo $a['id']; ?>" class="btn btn-primary" style="background: #e74c3c; width: auto; padding: 0.5rem 1rem;" onclick="return confirm('Are you sure you want to delete this account?')">Delete</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+        </table>
+    </div>
+</div>
 
 <?php require_once '../includes/admin_footer.php'; ?>

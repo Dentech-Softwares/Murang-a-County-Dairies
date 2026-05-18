@@ -48,22 +48,24 @@ if (isset($_POST['update_collection'])) {
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div class="stat-card" style="text-align: left; max-width: 500px;">
+<div class="content-card" style="text-align: left; max-width: 500px;">
     <form action="" method="POST">
         <div class="form-group">
             <label>Farmer</label>
-            <input type="text" value="<?php echo $collection['farmer_name']; ?>" disabled>
+            <input type="text" value="<?php echo $collection['farmer_name']; ?>" disabled style="background: #f9f9f9;">
         </div>
         <div class="form-group">
             <label>Date</label>
-            <input type="text" value="<?php echo $collection['date_collected']; ?>" disabled>
+            <input type="text" value="<?php echo $collection['date_collected']; ?>" disabled style="background: #f9f9f9;">
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" value="<?php echo $collection['quantity']; ?>" required>
+            <input type="number" name="quantity" step="0.01" value="<?php echo $collection['quantity']; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
         </div>
-        <button type="submit" name="update_collection" class="btn btn-secondary">Update Collection</button>
-        <a href="dashboard.php" class="btn btn-primary" style="display: block; text-align: center; margin-top: 1rem; background: #95a5a6; text-decoration: none; width: auto;">Cancel</a>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" name="update_collection" class="btn btn-secondary" style="width: 100%; padding: 1rem; font-weight: 600;">Update Collection</button>
+            <a href="dashboard.php" class="btn btn-primary" style="text-align: center; background: #95a5a6; text-decoration: none; width: 100%; padding: 1rem; font-weight: 600;">Cancel</a>
+        </div>
     </form>
 </div>
 

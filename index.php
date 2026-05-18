@@ -34,11 +34,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem 8%;
-            background: white;
+            background: #f4f9f4; /* Light greenish background */
             box-shadow: 0 2px 15px rgba(0,0,0,0.03);
             position: sticky;
             top: 0;
             z-index: 1000;
+            border-bottom: 1px solid #e0eee0;
         }
         .nav-logo {
             display: flex;
@@ -275,9 +276,129 @@
             .hero h1 { font-size: 3rem; }
         }
         @media (max-width: 768px) {
-            .features-grid { grid-template-columns: 1fr; }
-            .stats-strip { flex-direction: column; gap: 30px; align-items: center; }
-            .footer-grid { grid-template-columns: 1fr 1fr; }
+            nav {
+                flex-direction: column;
+                padding: 1rem 5%;
+                gap: 15px;
+                text-align: center;
+                height: auto !important; /* Allow height to grow */
+            }
+            .nav-logo {
+                font-size: 1.2rem;
+                justify-content: center;
+                margin-bottom: 10px; /* Space from buttons */
+            }
+            .nav-logo img {
+                height: 40px !important;
+            }
+            .nav-btns {
+                width: 100%;
+                flex-direction: column;
+                gap: 8px; /* Reduced gap */
+                padding: 0 10px; /* Add some side padding */
+            }
+            .btn-signin, .btn-register {
+                width: 100%;
+                padding: 10px; /* Slightly reduced padding */
+                font-size: 0.9rem; /* Slightly smaller font */
+                text-align: center;
+                display: block; /* Ensure block display */
+                white-space: nowrap; /* Prevent text wrapping within button */
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .hero { 
+                padding: 40px 5% 20px;
+                min-height: auto;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+                margin-bottom: 1.2rem;
+                line-height: 1.2;
+            }
+            .hero p {
+                font-size: 1rem;
+                margin-bottom: 2.5rem;
+                color: #555;
+            }
+            .hero-btns {
+                flex-direction: column;
+                width: 100%;
+                gap: 15px;
+            }
+            .btn-main, .btn-outline {
+                width: 100%;
+                justify-content: center;
+                padding: 16px;
+                font-size: 1rem;
+            }
+            .features-grid { 
+                grid-template-columns: 1fr; 
+                gap: 20px; 
+            }
+            .feature-card { 
+                padding: 30px 20px; 
+                text-align: center;
+            }
+            .feature-icon {
+                margin: 0 auto 20px;
+            }
+            
+            .stats-strip { 
+                flex-direction: column; 
+                gap: 20px; 
+                margin-top: 40px;
+                width: 100%;
+                padding: 0;
+            }
+            .stat-item {
+                background: white;
+                padding: 25px;
+                border-radius: 20px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                text-align: left;
+                border: 1px solid rgba(0,0,0,0.03);
+            }
+            .stat-item h2 {
+                font-size: 1.8rem;
+                margin-bottom: 0;
+                color: var(--dark-green);
+            }
+            .stat-item p {
+                margin-bottom: 0;
+                font-size: 0.95rem;
+                color: #666;
+            }
+            .cta-banner {
+                margin: 60px 5%;
+                padding: 50px 25px;
+                border-radius: 25px;
+            }
+            .cta-banner h2 {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+            .cta-banner .btn-main {
+                width: 100%;
+                display: flex;
+            }
+            .footer-grid { 
+                grid-template-columns: 1fr; 
+                gap: 40px; 
+                text-align: center;
+            }
+            .footer-logo img {
+                margin: 0 auto 20px;
+            }
+            .footer-links ul {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>

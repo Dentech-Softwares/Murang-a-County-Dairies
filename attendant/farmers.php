@@ -81,6 +81,10 @@ $farmers = $stmt->fetchAll();
 
 <h2>Manage Farmers</h2>
 
+<script>
+    setInterval(() => { if (!document.hidden) location.reload(); }, 60000);
+</script>
+
 <?php if ($success): ?>
     <div class="alert alert-success"><?php echo $success; ?></div>
 <?php endif; ?>
@@ -88,7 +92,7 @@ $farmers = $stmt->fetchAll();
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div class="stat-card" style="text-align: left; max-width: 500px; margin-bottom: 2rem;">
+<div class="content-card" style="text-align: left; max-width: 500px; margin-bottom: 2rem;">
     <h3>Add New Farmer</h3>
     <form action="" method="POST">
         <div class="form-group">
@@ -103,11 +107,11 @@ $farmers = $stmt->fetchAll();
     </form>
 </div>
 
-<div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
+<div class="content-card" style="padding: 0; overflow: hidden;">
     <!-- Header/Dropdown Toggle -->
     <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <i id="farmers-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
         <a href="?export=1" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
@@ -116,37 +120,39 @@ $farmers = $stmt->fetchAll();
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="farmers-collapsible" style="overflow: hidden;">
-        <table class="data-table" style="box-shadow: none; border-radius: 0;">
-    <thead>
-        <tr>
-            <th>S/N</th>
-            <th>Farmer No.</th>
-            <th>Full Name</th>
-            <th>Phone</th>
-            <th>Registered On</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (empty($farmers)): ?>
-            <tr><td colspan="5" style="text-align: center;">No farmers registered yet.</td></tr>
-        <?php else: ?>
-            <?php 
-            foreach ($farmers as $index => $f): 
-                $is_extra = $index >= 5;
-            ?>
-                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                    <td><?php echo $index + 1; ?></td>
-                    <td><strong><?php echo $f['farmer_number'] ?? 'N/A'; ?></strong></td>
-                    <td><?php echo $f['full_name']; ?></td>
-                    <td><?php echo $f['phone']; ?></td>
-                    <td><?php echo date('Y-m-d', strtotime($f['created_at'])); ?></td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </tbody>
-</table>
-</div>
+    <div id="farmers-collapsible" class="expanded" style="overflow: visible; display: block;">
+        <div class="table-container">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Farmer No.</th>
+                        <th>Full Name</th>
+                        <th>Phone</th>
+                        <th>Registered On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($farmers)): ?>
+                        <tr><td colspan="5" style="text-align: center;">No farmers registered yet.</td></tr>
+                    <?php else: ?>
+                        <?php 
+                        foreach ($farmers as $index => $f): 
+                            $is_extra = $index >= 5;
+                        ?>
+                            <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Farmer No."><strong><?php echo $f['farmer_number'] ?? 'N/A'; ?></strong></td>
+                                <td data-label="Full Name"><?php echo $f['full_name']; ?></td>
+                                <td data-label="Phone"><?php echo $f['phone']; ?></td>
+                                <td data-label="Registered On"><?php echo date('Y-m-d', strtotime($f['created_at'])); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

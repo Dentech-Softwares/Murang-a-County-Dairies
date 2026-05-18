@@ -38,15 +38,17 @@ $farmers = $stmt->fetchAll();
     <div class="alert alert-success"><?php echo $success; ?></div>
 <?php endif; ?>
 
-<div class="stat-card" style="text-align: left; max-width: 600px; margin-bottom: 2rem;">
-    <p style="margin-bottom: 1.5rem; color: #666;">Current Buying Price: <strong>Kes <?php echo $buying_price; ?> / Litre</strong></p>
+<div class="content-card" style="text-align: left; margin-bottom: 2rem; max-width: 600px;">
+    <div style="background: #f1f8e9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary-color);">
+        <p style="margin: 0; color: var(--primary-color); font-weight: 600;">Current Buying Price: Kes <?php echo $buying_price; ?> / Litre</p>
+    </div>
+    
     <form action="" method="POST" id="milk-form">
         <div class="form-group" style="position: relative;">
             <label>Farmer Name or No.</label>
             <div class="custom-select-wrapper">
                 <input type="text" id="farmer_search" placeholder="Type farmer name or No." 
-                       style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;" 
-                       autocomplete="off" required>
+                       autocomplete="off" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
                 <input type="hidden" name="farmer_id" id="selected_farmer_id">
                 
                 <div id="farmer_dropdown" class="custom-dropdown-list">
@@ -63,9 +65,9 @@ $farmers = $stmt->fetchAll();
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" style="padding: 0.8rem;" required>
+            <input type="number" name="quantity" step="0.01" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
         </div>
-        <button type="submit" name="record_milk" class="btn btn-secondary" style="padding: 1rem;">Record Collection</button>
+        <button type="submit" name="record_milk" class="btn btn-secondary" style="width: 100%; padding: 1rem; font-weight: 600;">Record Collection</button>
     </form>
 </div>
 
@@ -76,75 +78,52 @@ $farmers = $stmt->fetchAll();
 }
 .custom-dropdown-list {
     position: absolute;
-    top: -240px; /* Moved higher to show more farmers */
-    right: 100%; /* Position to the left of the input */
-    width: 200px; /* Reduced width a bit more */
-    background: #1a1a1a;
-    border-radius: 10px;
-    margin-right: 25px; /* Space for the arrow */
-    max-height: calc(100vh - 60px); /* Taller to show more farmers */
+    top: 100%; 
+    left: 0; 
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    margin-top: 5px; 
+    max-height: 250px;
     overflow-y: auto;
     z-index: 2000;
     display: none;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-/* The arrow pointing to the input - adjusted position to match higher top */
-.custom-dropdown-list::after {
-    content: "";
-    position: absolute;
-    top: 255px; /* Re-aligned with the input field vertically */
-    left: 100%;
-    border-width: 10px;
-    border-style: solid;
-    border-color: transparent transparent transparent #1a1a1a;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
 }
 .dropdown-item {
-    padding: 15px 20px;
+    padding: 12px 15px;
     cursor: pointer;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #f5f5f5;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 .dropdown-item:hover {
-    background: #2a2a2a;
+    background: #f1f8e9;
 }
 .dropdown-item .item-number {
     font-weight: 700;
     font-size: 0.9rem;
-    color: #ffffff;
+    color: var(--primary-color);
 }
 .dropdown-item .item-name {
     font-size: 0.85rem;
-    color: #888;
+    color: #666;
 }
 .dropdown-item:last-child {
     border-bottom: none;
 }
-/* Custom scrollbar */
 .custom-dropdown-list::-webkit-scrollbar {
     width: 6px;
 }
 .custom-dropdown-list::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: #f9f9f9;
 }
 .custom-dropdown-list::-webkit-scrollbar-thumb {
-    background: #444;
+    background: #ddd;
     border-radius: 3px;
-}
-/* Responsive adjustment */
-@media (max-width: 1000px) {
-    .custom-dropdown-list {
-        right: 0;
-        top: 100%;
-        width: 100%;
-        margin-right: 0;
-        margin-top: 10px;
-    }
-    .custom-dropdown-list::after {
-        display: none;
-    }
 }
 </style>
 
@@ -186,7 +165,7 @@ Array.from(items).forEach(item => {
         const name = item.getAttribute('data-name');
         const number = item.getAttribute('data-number');
         
-        searchInput.value = name;
+        searchInput.value = name + " (" + number + ")";
         selectedIdInput.value = id;
         dropdown.style.display = 'none';
     });

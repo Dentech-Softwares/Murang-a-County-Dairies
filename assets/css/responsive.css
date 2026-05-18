@@ -1,0 +1,391 @@
+/* 
+   Murang’a Dairy Management System - Responsive Styles
+   STRICTLY preserving desktop UI/UX for screens > 1024px
+*/
+
+/* Reset and Base Mobile Adjustments */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1.25rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* 0. BASE MOBILE RESET */
+    body {
+        font-size: 14px !important;
+    }
+
+    /* 1. RESPONSIVE FOUNDATION & LAYOUT */
+    .admin-layout, .attendant-layout {
+        flex-direction: column !important;
+        display: block !important;
+    }
+
+    .table-container {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .main-content {
+        padding: 15px !important;
+        margin-top: 60px !important; /* Space for fixed mobile header */
+        width: 100% !important;
+    }
+
+    .top-bar {
+        display: none !important; /* Hide desktop top bar on mobile */
+    }
+
+    /* 2. NAVIGATION (MOBILE) */
+    .sidebar {
+        display: flex !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        width: 280px !important;
+        z-index: 2000 !important;
+        background: #1b5e20 !important; /* var(--primary-dark) */
+        box-shadow: 4px 0 25px rgba(0,0,0,0.1) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transform: translateX(-105%) !important;
+        padding-top: 0 !important;
+        opacity: 0;
+        pointer-events: none;
+        border-right: none !important;
+    }
+
+    .sidebar.active {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto;
+    }
+
+    /* Sidebar Overlay */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4) !important;
+        backdrop-filter: blur(2px) !important;
+        z-index: 1999 !important;
+    }
+
+    .sidebar-overlay.active {
+        display: block !important;
+    }
+
+    /* Top Mobile Header */
+    .mobile-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 15px;
+        height: 60px;
+        background: #f4f9f4;
+        color: var(--primary-color);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1500;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        border-bottom: 1px solid #e0eee0;
+    }
+
+    .mobile-title {
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .hamburger-btn {
+        background: #f8f9fa;
+        border: none;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .hamburger-btn:active {
+        background: #e9ecef;
+        transform: scale(0.95);
+    }
+
+    /* 2.5 LOGIN & REGISTRATION */
+    .login-container {
+        width: 90% !important;
+        margin: 2rem auto !important;
+        padding: 1.5rem !important;
+    }
+
+    .login-container h2 {
+        font-size: 1.4rem !important;
+    }
+
+    .mobile-user i {
+        font-size: 1.2rem;
+        color: #666;
+    }
+
+    /* Sidebar Menu Enhancements */
+    .sidebar-menu a {
+        padding: 10px 18px !important;
+        font-size: 0.88rem !important;
+        margin: 4px 0 !important;
+        border-radius: 8px !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+    
+    .sidebar-menu a i {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .sidebar-menu a.active {
+        background: var(--primary-color) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2) !important;
+    }
+    
+    .sidebar-menu a.active i {
+        color: white !important;
+    }
+
+    /* Mobile Sidebar Profile */
+    .mobile-profile-info {
+        display: block !important;
+    }
+
+    /* 3. DASHBOARD (ATTRACTIVE CARDS) */
+    .stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 30px !important;
+    }
+
+    .stat-card {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
+        border: 1px solid rgba(0,0,0,0.03) !important;
+        display: flex !important;
+        align-items: center !important;
+        text-align: left !important;
+        gap: 24px !important;
+        background: white !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    .stat-card:active {
+        transform: scale(0.98) !important;
+    }
+
+    .stat-card i {
+        margin-bottom: 0 !important;
+        font-size: 1.6rem !important;
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #e8f5e9 !important; /* Soft Dairy Green */
+        color: #2e7d32 !important; /* Agricultural Green */
+        border-radius: 16px !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+
+    .stat-card .value {
+        font-size: 1.5rem !important;
+        font-weight: 800 !important;
+        color: #111827 !important; /* Near black for better contrast */
+        line-height: 1.1 !important;
+        letter-spacing: -0.5px !important;
+    }
+
+    .stat-card h3 {
+        margin-bottom: 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        color: #6b7280 !important; /* Medium gray */
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+    }
+
+    /* 4. TABLES → PROFESSIONAL MOBILE VIEW (CARD TRANSFORMATION) */
+    .data-table {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .data-table thead {
+        display: none !important; /* Hide table headers on mobile */
+    }
+
+    .data-table tr {
+        display: block !important;
+        background: white !important;
+        margin-bottom: 20px !important;
+        padding: 20px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+        border: 1px solid rgba(0,0,0,0.02) !important;
+        position: relative !important;
+    }
+
+    .data-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        text-align: right !important;
+        padding: 10px 0 !important;
+        border: none !important;
+        font-size: 0.85rem !important;
+        color: #1f2937 !important;
+        border-bottom: 1px solid #f9fafb !important;
+    }
+
+    .data-table td:last-child {
+        border-bottom: none !important;
+        padding-top: 12px !important;
+        margin-top: 5px !important;
+        justify-content: center !important;
+    }
+
+    .data-table td::before {
+        content: attr(data-label) !important;
+        float: left !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: 0.7rem !important;
+        color: #9ca3af !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .action-btns {
+        display: flex !important;
+        gap: 10px !important;
+        width: 100% !important;
+        justify-content: space-around !important;
+    }
+
+    .action-btns a, .action-btns button {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 10px !important;
+        border-radius: 10px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* 5. FORMS (CLEAN & TOUCH-FRIENDLY) */
+    input, select, textarea {
+        padding: 12px 14px !important;
+        font-size: 0.9rem !important;
+        border: 1.5px solid #eee !important;
+        background: #fcfcfc !important;
+        transition: all 0.3s !important;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--primary-color) !important;
+        background: white !important;
+        box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* 6. BUTTONS (TOUCH-FRIENDLY) */
+    .btn, button, input[type="submit"] {
+        padding: 12px !important;
+        font-size: 0.9rem !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        border: none !important;
+    }
+
+    .btn:active, button:active {
+        transform: scale(0.98) !important;
+    }
+
+    .btn-primary {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    /* Action buttons in cards */
+    .action-btns {
+        border-top: 1px solid #f5f5f5 !important;
+        margin-top: 15px !important;
+        padding-top: 15px !important;
+    }
+
+    .action-btns .btn {
+        margin: 0 !important;
+        padding: 12px !important;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
+    }
+
+    /* 7. VISUAL IMPROVEMENTS */
+    .card, .form-container, .login-container {
+        padding: 25px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+        border: 1px solid #f8f9fa !important;
+    }
+
+    .login-container {
+        width: 90% !important;
+        max-width: none !important;
+        margin: 20px auto !important;
+    }
+
+    h2 {
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.5px !important;
+    }
+
+    /* Collapsible Table Header (Dashboard) */
+    div[onclick*="toggleTable"] {
+        padding: 15px !important;
+    }
+
+    div[onclick*="toggleTable"] h3 {
+        font-size: 1rem !important;
+    }
+
+    /* Spacing */
+    .row {
+        margin-top: 0 !important;
+    }
+
+    /* Record Milk Custom Dropdown Fix */
+    .custom-dropdown-list {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-height: 80vh !important;
+        right: auto !important;
+        margin: 0 !important;
+    }
+
+    .custom-dropdown-list::after {
+        display: none !important;
+    }
+}

@@ -28,79 +28,81 @@ $recent_collections = $stmt->fetchAll();
 
 <div class="stats-grid">
     <div class="stat-card">
-        <i class="fas fa-industry fa-2x" style="color: var(--primary-color); margin-bottom: 1rem;"></i>
+        <i class="fas fa-industry"></i>
         <h3>Total Dairies</h3>
         <div class="value"><?php echo $total_dairies; ?></div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-users fa-2x" style="color: var(--primary-color); margin-bottom: 1rem;"></i>
+        <i class="fas fa-users"></i>
         <h3>Total Farmers</h3>
         <div class="value"><?php echo $total_farmers; ?></div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-user-tie fa-2x" style="color: var(--primary-color); margin-bottom: 1rem;"></i>
+        <i class="fas fa-user-tie"></i>
         <h3>Total Attendants</h3>
         <div class="value"><?php echo $total_attendants; ?></div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-hand-holding-water fa-2x" style="color: var(--primary-color); margin-bottom: 1rem;"></i>
-        <h3>Today's Milk Collected</h3>
-        <div class="value"><?php echo number_format($total_milk_collected, 2); ?> L</div>
+        <i class="fas fa-hand-holding-water"></i>
+        <h3>Today's Collected</h3>
+        <div class="value"><?php echo number_format($total_milk_collected, 1); ?> L</div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-truck-loading fa-2x" style="color: var(--primary-color); margin-bottom: 1rem;"></i>
-        <h3>Today's Milk Sold</h3>
-        <div class="value"><?php echo number_format($total_milk_sold, 2); ?> L</div>
+        <i class="fas fa-truck-loading"></i>
+        <h3>Today's Sold</h3>
+        <div class="value"><?php echo number_format($total_milk_sold, 1); ?> L</div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-coins fa-2x" style="color: #f39c12; margin-bottom: 1rem;"></i>
+        <i class="fas fa-coins" style="color: #ffa000; background: #fff8e1;"></i>
         <h3>Today's Profit</h3>
-        <div class="value" style="color: #f39c12;">Kes <?php echo number_format($total_profit, 2); ?></div>
+        <div class="value" style="color: #ffa000;">Kes <?php echo number_format($total_profit, 0); ?></div>
     </div>
 </div>
 
 <div class="row" style="margin-top: 2rem;">
     <div class="col" style="flex: 1;">
-        <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
+        <div class="content-card" style="padding: 0; overflow: hidden;">
             <!-- Header/Dropdown Toggle -->
             <div onclick="toggleTable('collapsible-table', 'toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <i id="toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-                    <h3 style="margin: 0;">Today's Milk Collections (By Dairy)</h3>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Today's Collections by Dairy</h3>
                 </div>
             </div>
 
             <!-- Table Content (Collapsible) -->
-            <div id="collapsible-table" style="overflow: hidden;">
-                <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
-                    <thead>
-                        <tr>
-                            <th>S/N</th>
-                            <th>Date</th>
-                            <th>Dairy Name</th>
-                            <th>Total Quantity (L)</th>
-                            <th>Total Amount (Kes)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($recent_collections)): ?>
-                            <tr><td colspan="5" style="text-align: center;">No collections recorded yet today.</td></tr>
-                        <?php else: ?>
-                            <?php 
-                            foreach ($recent_collections as $index => $row): 
-                                $is_extra = $index >= 5;
-                            ?>
-                                <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                                    <td><?php echo $index + 1; ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($row['collection_date'])); ?></td>
-                                    <td><strong><?php echo $row['dairy_name']; ?></strong></td>
-                                    <td><?php echo number_format($row['total_quantity'], 2); ?></td>
-                                    <td><?php echo number_format($row['total_amount'], 2); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+            <div id="collapsible-table" style="overflow: visible;">
+                <div class="table-container">
+                    <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Date</th>
+                                <th>Dairy Name</th>
+                                <th>Total Quantity (L)</th>
+                                <th>Total Amount (Kes)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($recent_collections)): ?>
+                                <tr><td colspan="5" style="text-align: center;">No collections recorded yet today.</td></tr>
+                            <?php else: ?>
+                                <?php 
+                                foreach ($recent_collections as $index => $row): 
+                                    $is_extra = $index >= 5;
+                                ?>
+                                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                        <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                        <td data-label="Date"><?php echo date('Y-m-d', strtotime($row['collection_date'])); ?></td>
+                                        <td data-label="Dairy Name"><strong><?php echo $row['dairy_name']; ?></strong></td>
+                                        <td data-label="Total Quantity (L)"><?php echo number_format($row['total_quantity'], 2); ?></td>
+                                        <td data-label="Total Amount (Kes)"><?php echo number_format($row['total_amount'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

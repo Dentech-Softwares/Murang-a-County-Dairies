@@ -75,11 +75,18 @@ if (isset($_GET['export'])) {
 }
 
 require_once '../includes/attendant_header.php';
+?>
+
+<script>
+    setInterval(() => { if (!document.hidden) location.reload(); }, 30000);
+</script>
+
+<?php
 
 $dairy_id = $_SESSION['dairy_id'];
 
 // Get filters
-$date_filter = $_GET['date'] ?? date('Y-m-d');
+$date_filter = $_GET['date'] ?? '';
 $farmer_filter = $_GET['farmer_id'] ?? '';
 
 // Get all farmers for filter dropdown
@@ -96,7 +103,7 @@ $coll_query = "SELECT mc.*, f.full_name as farmer_name, a.full_name as attendant
 $coll_params = [$dairy_id];
 
 if ($date_filter) {
-    $coll_query .= " AND DATE(mc.date_collected) = ?";
+    $coll_query .= " AND CAST(mc.date_collected AS DATE) = ?";
     $coll_params[] = $date_filter;
 }
 if ($farmer_filter) {
@@ -117,7 +124,7 @@ $sales_query = "SELECT ms.*, a.full_name as attendant_name
 $sales_params = [$dairy_id];
 
 if ($date_filter) {
-    $sales_query .= " AND DATE(ms.date_sold) = ?";
+    $sales_query .= " AND CAST(ms.date_sold AS DATE) = ?";
     $sales_params[] = $date_filter;
 }
 $sales_query .= " ORDER BY ms.date_sold ASC";
@@ -152,15 +159,15 @@ $success = $_GET['success'] ?? null;
 <?php endif; ?>
 
 <!-- Filter Section -->
-<div class="stat-card" style="margin-bottom: 2rem; text-align: left; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow);">
-    <form action="" method="GET" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
-        <div class="form-group" style="margin: 0; flex: 0 1 200px;">
-            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Date</label>
-            <input type="date" name="date" value="<?php echo $date_filter; ?>" onchange="this.form.submit()" style="padding: 0.6rem; border-radius: 6px; border: 1px solid #ddd; width: 100%; cursor: pointer;">
+<div class="content-card" style="margin-bottom: 2rem; text-align: left; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow);">
+    <form action="" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin: 0; flex: 1 1 200px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555;">Filter by Date</label>
+            <input type="date" name="date" value="<?php echo $date_filter; ?>" onchange="this.form.submit()" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; cursor: pointer;">
         </div>
-        <div class="form-group" style="margin: 0; flex: 0 1 250px;">
-            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Farmer</label>
-            <select name="farmer_id" onchange="this.form.submit()" style="padding: 0.6rem; width: 100%; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+        <div class="form-group" style="margin: 0; flex: 1 1 250px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555;">Filter by Farmer</label>
+            <select name="farmer_id" onchange="this.form.submit()" style="padding: 0.8rem; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer;">
                 <option value="">All Farmers</option>
                 <?php foreach ($all_farmers as $f): ?>
                     <option value="<?php echo $f['id']; ?>" <?php echo $farmer_filter == $f['id'] ? 'selected' : ''; ?>>
@@ -172,19 +179,20 @@ $success = $_GET['success'] ?? null;
     </form>
 </div>
 
-<div class="row" style="margin-bottom: 3rem;">
-    <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
-        <div onclick="toggleTable('coll-collapsible', 'coll-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+<div class="row" style="margin-bottom: 2rem;">
+    <div class="content-card" style="padding: 0; overflow: hidden;">
+        <div onclick="toggleTable('coll-collapsible', 'coll-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <i id="coll-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-                <h3 style="margin: 0;">Milk Collections History</h3>
+                <i id="coll-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
+                <h3 style="margin: 0; font-size: 1.1rem;">Milk Collections History</h3>
             </div>
             <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-                <i class="fas fa-download"></i> Download CSV
+                <i class="fas fa-download"></i> CSV
             </a>
         </div>
-        <div id="coll-collapsible" style="overflow: hidden;">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+        <div id="coll-collapsible" class="expanded" style="overflow: visible; display: block;">
+            <div class="table-container">
+                <table class="data-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>S/N</th>
@@ -205,16 +213,16 @@ $success = $_GET['success'] ?? null;
                     $is_extra = $index >= 5;
                 ?>
                     <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                        <td><?php echo $index + 1; ?></td>
-                        <td><?php echo date('Y-m-d H:i', strtotime($c['date_collected'])); ?></td>
-                        <td><?php echo $c['farmer_name']; ?></td>
-                        <td><?php echo number_format($c['quantity'], 2); ?></td>
-                        <td><?php echo number_format($c['total_price'], 2); ?></td>
-                        <td><?php echo $c['attendant_name'] ?: '<em>System</em>'; ?></td>
-                        <td>
-                            <div style="display: flex; gap: 5px;">
-                                <a href="edit_collection.php?id=<?php echo $c['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
-                                <a href="?delete_type=collection&delete_id=<?php echo $c['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                        <td data-label="S/N"><?php echo $index + 1; ?></td>
+                        <td data-label="Date"><?php echo date('Y-m-d H:i', strtotime($c['date_collected'])); ?></td>
+                        <td data-label="Farmer"><?php echo $c['farmer_name']; ?></td>
+                        <td data-label="Quantity (L)"><?php echo number_format($c['quantity'], 2); ?></td>
+                        <td data-label="Total (Kes)"><?php echo number_format($c['total_price'], 2); ?></td>
+                        <td data-label="Served By"><?php echo $c['attendant_name'] ?: '<em>System</em>'; ?></td>
+                        <td data-label="Actions">
+                            <div class="action-btns">
+                                <a href="edit_collection.php?id=<?php echo $c['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
+                                <a href="?delete_type=collection&delete_id=<?php echo $c['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -222,30 +230,32 @@ $success = $_GET['success'] ?? null;
             <?php endif; ?>
         </tbody>
     </table>
+            </div>
     </div>
 </div>
 </div>
 
 <div class="row">
-    <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;">
-        <div onclick="toggleTable('sales-collapsible', 'sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+    <div class="content-card" style="padding: 0; overflow: hidden;">
+        <div onclick="toggleTable('sales-collapsible', 'sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-                <h3 style="margin: 0;">Milk Sales History</h3>
+                <i id="sales-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
+                <h3 style="margin: 0; font-size: 1.1rem;">Milk Sales History</h3>
             </div>
             <a href="?export=sales&date=<?php echo $date_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-                <i class="fas fa-download"></i> Download CSV
+                <i class="fas fa-download"></i> CSV
             </a>
         </div>
-        <div id="sales-collapsible" style="overflow: hidden;">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+        <div id="sales-collapsible" class="expanded" style="overflow: visible; display: block;">
+            <div class="table-container">
+                <table class="data-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>S/N</th>
                 <th>Date</th>
                 <th>Sold To</th>
-                <th>Quantity (L)</th>
-                <th>Total (Kes)</th>
+                <th>Quantity</th>
+                <th>Total</th>
                 <th>Sold By</th>
                 <th>Actions</th>
             </tr>
@@ -259,16 +269,16 @@ $success = $_GET['success'] ?? null;
                     $is_extra = $index >= 5;
                 ?>
                     <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                        <td><?php echo $index + 1; ?></td>
-                        <td><?php echo date('Y-m-d H:i', strtotime($s['date_sold'])); ?></td>
-                        <td><?php echo $s['sold_to']; ?></td>
-                        <td><?php echo number_format($s['quantity'], 2); ?></td>
-                        <td><?php echo number_format($s['total_price'], 2); ?></td>
-                        <td><?php echo $s['attendant_name'] ?: '<em>System</em>'; ?></td>
-                        <td>
-                            <div style="display: flex; gap: 5px;">
-                                <a href="edit_sale.php?id=<?php echo $s['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
-                                <a href="?delete_type=sale&delete_id=<?php echo $s['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                        <td data-label="S/N"><?php echo $index + 1; ?></td>
+                        <td data-label="Date"><?php echo date('Y-m-d H:i', strtotime($s['date_sold'])); ?></td>
+                        <td data-label="Sold To"><strong><?php echo $s['sold_to']; ?></strong></td>
+                        <td data-label="Quantity"><?php echo number_format($s['quantity'], 2); ?> L</td>
+                        <td data-label="Total">Kes <?php echo number_format($s['total_price'], 2); ?></td>
+                        <td data-label="Sold By"><?php echo $s['attendant_name'] ?: '<em>System</em>'; ?></td>
+                        <td data-label="Actions">
+                            <div class="action-btns">
+                                <a href="edit_sale.php?id=<?php echo $s['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
+                                <a href="?delete_type=sale&delete_id=<?php echo $s['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Delete this record?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -276,6 +286,7 @@ $success = $_GET['success'] ?? null;
             <?php endif; ?>
         </tbody>
     </table>
+            </div>
     </div>
 </div>
 </div>

@@ -7,6 +7,19 @@ if (!isset($_SESSION['attendant_id'])) {
 }
 require_once 'db_connect.php';
 
+// Check for multiple logins
+if (isset($pdo) && isset($_SESSION['attendant_id']) && isset($_SESSION['current_session_id'])) {
+    $stmt = $pdo->prepare("SELECT current_session_id FROM attendants WHERE id = ?");
+    $stmt->execute([$_SESSION['attendant_id']]);
+    $db_session_id = $stmt->fetchColumn();
+    
+    if ($db_session_id !== $_SESSION['current_session_id']) {
+        session_destroy();
+        header("Location: login.php?error=logged_out");
+        exit();
+    }
+}
+
 // Get Dairy Name
 $stmt = $pdo->prepare("SELECT name FROM dairies WHERE id = ?");
 $stmt->execute([$_SESSION['dairy_id']]);
@@ -19,57 +32,91 @@ $dairy_name = $stmt->fetchColumn();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendant Dashboard - <?php echo $dairy_name; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-dark: #1b5e20;
+            --accent-gold: #ffa000;
+            --bg-light: #f9fbf9;
+        }
         .attendant-layout {
             display: flex;
             min-height: 100vh;
         }
         .sidebar {
-            width: 250px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 2rem 1rem;
+            width: 260px;
+            background-color: var(--primary-dark); /* Deeper Forest Green */
+            border-right: none;
+            padding: 0.7rem 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+            z-index: 1000;
         }
-        .sidebar h2 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            text-align: center;
+        @media (min-width: 769px) {
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                overflow-y: hidden; /* Prevent entire sidebar from scrolling */
+            }
+            .main-content {
+                margin-left: 260px;
+                min-height: 100vh;
+            }
         }
-        .sidebar p {
-            font-size: 0.8rem;
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
             text-align: center;
-            margin-bottom: 2rem;
-            opacity: 0.8;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 1rem;
+            margin-bottom: 1rem;
         }
         .sidebar-menu {
             list-style: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            overflow-y: auto; /* Allow menu items to scroll if they exceed height */
         }
         .sidebar-menu li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
         .sidebar-menu a {
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
-            display: block;
-            padding: 0.8rem 1rem;
-            border-radius: 6px;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.95rem;
         }
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: rgba(255,255,255,0.1);
+        .sidebar-menu a i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.25s;
+        }
+        .sidebar-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.08);
             color: white;
+            transform: translateX(5px);
         }
-        .sidebar-menu i {
-            margin-right: 10px;
-            width: 20px;
+        .sidebar-menu a.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+        .sidebar-menu a.active i {
+            color: white;
         }
         .main-content {
             flex: 1;
-            padding: 2rem;
-            background-color: #f8f9fa;
+            padding: 2.5rem;
+            background-color: #f4f7f6; /* Subtle contrast from sidebar and cards */
+            max-width: 100%;
         }
         .top-bar {
             display: flex;
@@ -81,19 +128,18 @@ $dairy_name = $stmt->fetchColumn();
             border-radius: 12px;
             box-shadow: var(--shadow);
         }
-        .stats-grid {
+        .responsive-grid-2 {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        .responsive-grid-equal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
         @media (max-width: 992px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 768px) {
-            .stats-grid {
+            .responsive-grid-2, .responsive-grid-equal {
                 grid-template-columns: 1fr;
             }
         }
@@ -103,6 +149,12 @@ $dairy_name = $stmt->fetchColumn();
             border-radius: 12px;
             box-shadow: var(--shadow);
             text-align: center;
+        }
+        .content-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
         }
         .stat-card h3 {
             font-size: 0.9rem;
@@ -118,18 +170,19 @@ $dairy_name = $stmt->fetchColumn();
             width: 100%;
             border-collapse: collapse;
             background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
         }
         .data-table th, .data-table td {
-            padding: 1rem;
+            padding: 1.2rem 1rem;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
         .data-table th {
             background-color: #f8f9fa;
-            font-weight: 600;
+            font-weight: 700;
+            color: #444;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .extra-row {
             display: none;
@@ -138,12 +191,13 @@ $dairy_name = $stmt->fetchColumn();
             display: table-row;
         }
         .badge {
-            padding: 0.3rem 0.6rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
         }
-        .badge-attendant { background: #e8f5e9; color: #2e7d32; }
+        .badge-attendant { background: #c8e6c9; color: #1b5e20; }
 
         /* Profile Dropdown */
         .profile-dropdown {
@@ -204,25 +258,66 @@ $dairy_name = $stmt->fetchColumn();
             color: #d63031;
         }
     </style>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                
+                if (sidebar.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        function toggleTable(containerId, iconId) {
+            const container = document.getElementById(containerId);
+            const icon = document.getElementById(iconId);
+            
+            container.classList.toggle('expanded');
+            
+            if (container.classList.contains('expanded')) {
+                icon.style.transform = "rotate(0deg)";
+            } else {
+                icon.style.transform = "rotate(-90deg)";
+            }
+        }
+    </script>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <div class="mobile-header" style="display: none;">
+        <button class="hamburger-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="mobile-title">MURANG'A DAIRY</div>
+        <div class="mobile-user" onclick="toggleDropdown()">
+            <i class="fas fa-user-circle"></i>
+        </div>
+    </div>
+
     <div class="attendant-layout">
-        <div class="sidebar">
-            <div style="text-align: center; margin-bottom: 0.5rem;">
-                <i class="fas fa-store fa-2x" style="color: rgba(255,255,255,0.9); display: block; margin: 0 auto;"></i>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../muranga.png" alt="Logo" style="height: 65px; background: white; padding: 10px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: inline-block; object-fit: contain;">
+                <h2 style="margin: 0; font-size: 1rem; color: white; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Murang'a Dairy</h2>
+                <p style="margin: 5px 0 0 0; font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; letter-spacing: 1px;"><?php echo $dairy_name; ?></p>
             </div>
-            <h2 style="margin-top: 0.5rem;"><?php echo $dairy_name; ?></h2>
-            <p>Murang'a County Attendant Portal</p>
             <ul class="sidebar-menu">
                 <?php $current_page = basename($_SERVER['PHP_SELF']); ?>
-                <li><a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
                 <li><a href="farmers.php" class="<?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>"><i class="fas fa-users"></i> Farmers</a></li>
-                <li><a href="record_milk.php" class="<?php echo $current_page == 'record_milk.php' ? 'active' : ''; ?>"><i class="fas fa-plus-circle"></i> Record Milk</a></li>
-                <li><a href="sell_milk.php" class="<?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd"></i> Sell Milk</a></li>
-                <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-history"></i> Milk Records</a></li>
-                <li style="margin-top: 2rem;"><a href="../includes/logout.php" style="color: #ff7675;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li><a href="record_milk.php" class="<?php echo $current_page == 'record_milk.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-water"></i> Record Collection</a></li>
+                <li><a href="sell_milk.php" class="<?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>"><i class="fas fa-truck-loading"></i> Sell Milk</a></li>
+                <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-list"></i> History</a></li>
             </ul>
         </div>
+        
         <div class="main-content">
             <div class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="top-bar-left" style="display: flex; align-items: center; gap: 15px; color: #666; font-size: 0.95rem;">
@@ -231,51 +326,53 @@ $dairy_name = $stmt->fetchColumn();
                     <i class="far fa-clock"></i> <span id="current-time"><?php echo date('H:i:s'); ?></span>
                 </div>
                 <div class="user-info">
-                    <div class="profile-dropdown">
-                        <div class="profile-trigger" onclick="toggleDropdown(event)">
-                            <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
-                            <div style="text-align: left;">
-                                <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['attendant_name']; ?></div>
-                                <span class="badge badge-attendant" style="font-size: 0.7rem;">Attendant</span>
-                            </div>
-                            <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px;"></i>
+                <div class="profile-dropdown">
+                    <div class="profile-trigger" onclick="toggleDropdown()">
+                        <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['attendant_name']; ?></div>
+                            <span class="badge badge-attendant" style="font-size: 0.7rem;">Attendant</span>
                         </div>
-                        <div id="profileDropdown" class="dropdown-content">
-                            <div class="dropdown-info">
-                                <p>Full Name</p>
-                                <strong><?php echo $_SESSION['attendant_name']; ?></strong>
-                            </div>
-                            <div class="dropdown-info">
-                                <p>Current Date</p>
-                                <strong><?php echo date('F j, Y'); ?></strong>
-                            </div>
-                            <a href="../includes/logout.php" class="dropdown-link">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px;"></i>
+                    </div>
+                    <div class="dropdown-content" id="profileDropdown">
+                        <div class="dropdown-info">
+                            <p>Full Name</p>
+                            <strong><?php echo $_SESSION['attendant_name']; ?></strong>
                         </div>
+                        <div class="dropdown-info">
+                            <p>Dairy Plant</p>
+                            <strong><?php echo $dairy_name; ?></strong>
+                        </div>
+                        <div class="dropdown-info">
+                            <p>Current Date</p>
+                            <strong><?php echo date('F j, Y'); ?></strong>
+                        </div>
+                        <a href="../includes/logout.php" class="dropdown-link">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
                     </div>
                 </div>
+                </div>
             </div>
+
             <script>
-                function toggleDropdown(event) {
-                    event.stopPropagation();
+                function toggleDropdown() {
                     document.getElementById("profileDropdown").classList.toggle("show");
                 }
 
-                function toggleTable(containerId, iconId) {
-                    const container = document.getElementById(containerId);
-                    const icon = document.getElementById(iconId);
-                    
-                    container.classList.toggle('expanded');
-                    
-                    if (container.classList.contains('expanded')) {
-                        icon.style.transform = "rotate(90deg)";
-                    } else {
-                        icon.style.transform = "rotate(0deg)";
-                    }
-                }
+                // Close sidebar when clicking menu items on mobile
+                document.addEventListener('DOMContentLoaded', function() {
+                    const menuItems = document.querySelectorAll('.sidebar-menu a');
+                    menuItems.forEach(item => {
+                        item.addEventListener('click', () => {
+                            if (window.innerWidth <= 768) {
+                                toggleSidebar();
+                            }
+                        });
+                    });
+                });
 
-                // Close the dropdown if the user clicks outside of it
                 window.onclick = function(event) {
                     if (!event.target.closest('.profile-dropdown')) {
                         const dropdowns = document.getElementsByClassName("dropdown-content");

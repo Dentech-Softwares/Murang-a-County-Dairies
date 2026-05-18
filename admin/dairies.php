@@ -90,8 +90,8 @@ if (isset($_GET['success'])) $success = $_GET['success'];
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-    <div class="stat-card" style="text-align: left;">
+<div class="responsive-grid-equal" style="margin-bottom: 2rem;">
+    <div class="content-card" style="text-align: left;">
         <h3><?php echo $edit_dairy ? 'Edit Dairy' : 'Add New Dairy'; ?></h3>
         <form action="" method="POST">
             <?php if ($edit_dairy): ?>
@@ -114,7 +114,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         </form>
     </div>
 
-    <div class="stat-card" style="text-align: left;">
+    <div class="content-card" style="text-align: left;">
         <h3>Add Dairy Attendant</h3>
         <form action="" method="POST">
             <div class="form-group">
@@ -127,7 +127,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
             </div>
             <div class="form-group">
                 <label>Assign to Dairy</label>
-                <select name="dairy_id" class="btn" style="background: white; border: 1px solid #ddd; color: #333; text-align: left;" required>
+                <select name="dairy_id" class="btn" style="background: white; border: 1px solid #ddd; color: #333; text-align: left; width: 100%; margin-bottom: 1rem;" required>
                     <option value="">Select Dairy</option>
                     <?php foreach ($dairies as $d): ?>
                         <option value="<?php echo $d['id']; ?>"><?php echo $d['name']; ?></option>
@@ -150,7 +150,8 @@ if (isset($_GET['success'])) $success = $_GET['success'];
 
     <!-- Table Content (Collapsible) -->
     <div id="dairies-collapsible" style="overflow: hidden;">
-        <table class="data-table" style="box-shadow: none; border-radius: 0;">
+        <div class="table-container">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
             <th>S/N</th>
@@ -170,20 +171,23 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                 $is_extra = $index >= 5;
             ?>
                 <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                    <td><?php echo $index + 1; ?></td>
-                    <td><?php echo $d['name']; ?></td>
-                    <td><?php echo $d['location']; ?></td>
-                    <td><?php echo $d['attendant_names'] ?: '<em>No attendant assigned</em>'; ?></td>
-                    <td><?php echo $d['attendant_phones'] ?: '<em>N/A</em>'; ?></td>
-                    <td>
-                        <a href="?edit=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
-                        <a href="?delete=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                    <td data-label="S/N"><?php echo $index + 1; ?></td>
+                    <td data-label="Name"><?php echo $d['name']; ?></td>
+                    <td data-label="Location"><?php echo $d['location']; ?></td>
+                    <td data-label="Attendant(s)"><?php echo $d['attendant_names'] ?: '<em>No attendant assigned</em>'; ?></td>
+                    <td data-label="Phone"><?php echo $d['attendant_phones'] ?: '<em>N/A</em>'; ?></td>
+                    <td data-label="Actions">
+                        <div class="action-btns">
+                            <a href="?edit=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db;"><i class="fas fa-edit"></i></a>
+                            <a href="?delete=<?php echo $d['id']; ?>" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
         <?php endif; ?>
     </tbody>
 </table>
+        </div>
 </div>
 </div>
 

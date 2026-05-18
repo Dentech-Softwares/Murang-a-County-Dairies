@@ -39,52 +39,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Registration - Murang'a County Dairy</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <div class="login-container">
+<body style="background: #f8f9fa; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px;">
+    <div class="login-container" style="max-width: 480px; padding: 2.2rem; margin: 0; width: 100%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06);">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-            <img src="../muranga.png" alt="Murang'a Logo" style="height: 80px; width: auto;">
+            <img src="../muranga.png" alt="Murang'a Logo" style="height: 60px; width: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));">
         </div>
-        <h2>Head Office Registration</h2>
+        <h2 style="margin-bottom: 1.8rem; font-size: 1.4rem; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px;">Head Office Registration</h2>
         
         <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
+            <div class="alert alert-error" style="padding: 0.7rem; margin-bottom: 1.2rem; font-size: 0.82rem; border-radius: 10px;"><?php echo $error; ?></div>
         <?php endif; ?>
         <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
+            <div class="alert alert-success" style="padding: 0.7rem; margin-bottom: 1.2rem; font-size: 0.82rem; border-radius: 10px;"><?php echo $success; ?></div>
         <?php endif; ?>
 
         <form action="" method="POST">
-            <div class="form-group">
-                <label for="full_name">Full Name</label>
-                <input type="text" id="full_name" name="full_name" required>
+            <div class="responsive-grid-equal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="full_name" style="font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" required style="padding: 0.75rem; border-radius: 12px; border: 1.5px solid #eee;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="phone" style="font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Phone Number</label>
+                    <input type="text" id="phone" name="phone" required style="padding: 0.75rem; border-radius: 12px; border: 1.5px solid #eee;">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="text" id="phone" name="phone" required>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="email" style="font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Email Address</label>
+                <input type="email" id="email" name="email" required style="padding: 0.75rem; border-radius: 12px; border: 1.5px solid #eee;">
             </div>
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
+            <div class="responsive-grid-equal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="password" style="font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
+                    <input type="password" id="password" name="password" required style="padding: 0.75rem; border-radius: 12px; border: 1.5px solid #eee;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="role" style="font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Account Type</label>
+                    <select name="role" id="role" class="btn" style="background: #fff; border: 1.5px solid #eee; color: #333; text-align: left; padding: 0.75rem; height: auto; border-radius: 12px; width: 100%; font-size: 0.9rem;">
+                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="role">Account Type</label>
-                <select name="role" id="role" class="btn" style="background: white; border: 1px solid #ddd; color: #333; text-align: left;">
-                    <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" class="btn btn-primary" style="padding: 0.85rem; font-weight: 700; width: 100%; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Register</button>
         </form>
-        <div style="margin-top: 1.5rem; text-align: center; display: flex; flex-direction: column; gap: 1rem;">
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 0.5rem 0;">
-            <a href="login.php" class="btn" style="border: 2px solid var(--primary-color); color: var(--primary-color); background: transparent; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
-                <i class="fas fa-sign-in-alt"></i> Back to Login
+        <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid #f0f0f0; padding-top: 1.5rem;">
+            <a href="login.php" style="color: #999; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; transition: color 0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='#999'">
+                <i class="fas fa-sign-in-alt" style="font-size: 0.8rem;"></i> Back to Login
             </a>
         </div>
     </div>

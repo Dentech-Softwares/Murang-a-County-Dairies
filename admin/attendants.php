@@ -106,9 +106,9 @@ if (isset($_GET['success'])) $success = $_GET['success'];
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;">
+<div class="responsive-grid-2" style="margin-bottom: 2rem;">
     <!-- Add/Edit Form -->
-    <div class="stat-card" style="text-align: left; height: fit-content;">
+    <div class="content-card" style="text-align: left; height: fit-content;">
         <h3><?php echo $edit_attendant ? 'Edit Attendant' : 'Add New Attendant'; ?></h3>
         <form action="" method="POST">
             <?php if ($edit_attendant): ?>
@@ -165,41 +165,43 @@ if (isset($_GET['success'])) $success = $_GET['success'];
 
         <!-- Table Content (Collapsible) -->
         <div id="attendants-collapsible" style="overflow: hidden;">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
-            <thead>
-                <tr>
-                    <th>S/N</th>
-                    <th>Full Name</th>
-                    <th>Phone</th>
-                    <th>Dairy</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($attendants)): ?>
-                    <tr><td colspan="5" style="text-align: center;">No attendants found.</td></tr>
-                <?php else: ?>
-                    <?php 
-                    foreach ($attendants as $index => $a): 
-                        $is_extra = $index >= 5;
-                    ?>
-                        <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
-                            <td><?php echo $index + 1; ?></td>
-                            <td><strong><?php echo $a['full_name']; ?></strong></td>
-                            <td><?php echo $a['phone']; ?></td>
-                            <td><?php echo $a['dairy_name']; ?></td>
-                            <td>
-                                <div style="display: flex; gap: 5px;">
-                                    <a href="?edit=<?php echo $a['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                    <a href="?reset_password=<?php echo $a['id']; ?>" class="btn btn-primary" title="Reset Password" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #f39c12; text-decoration: none;" onclick="return confirm('Reset password to 123456?')"><i class="fas fa-key"></i></a>
-                                    <a href="?delete=<?php echo $a['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+            <div class="table-container">
+                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Full Name</th>
+                        <th>Phone</th>
+                        <th>Dairy</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($attendants)): ?>
+                        <tr><td colspan="5" style="text-align: center;">No attendants found.</td></tr>
+                    <?php else: ?>
+                        <?php 
+                        foreach ($attendants as $index => $a): 
+                            $is_extra = $index >= 5;
+                        ?>
+                            <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Full Name"><strong><?php echo $a['full_name']; ?></strong></td>
+                                <td data-label="Phone"><?php echo $a['phone']; ?></td>
+                                <td data-label="Dairy"><?php echo $a['dairy_name']; ?></td>
+                                <td data-label="Actions">
+                                    <div class="action-btns">
+                                        <a href="?edit=<?php echo $a['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
+                                        <a href="?reset_password=<?php echo $a['id']; ?>" class="btn btn-primary" title="Reset Password" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #f39c12; text-decoration: none;" onclick="return confirm('Reset password to 123456?')"><i class="fas fa-key"></i></a>
+                                        <a href="?delete=<?php echo $a['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
