@@ -65,13 +65,13 @@ $recent_collections = $stmt->fetchAll();
             <!-- Header/Dropdown Toggle -->
             <div onclick="toggleTable('collapsible-table', 'toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <i id="toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                    <i id="toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
                     <h3 style="margin: 0; font-size: 1.1rem;">Today's Collections by Dairy</h3>
                 </div>
             </div>
 
             <!-- Table Content (Collapsible) -->
-            <div id="collapsible-table" style="overflow: visible;">
+            <div id="collapsible-table" class="expanded" style="display: block; overflow: visible;">
                 <div class="table-container">
                     <table class="data-table" id="recent-table" style="box-shadow: none; border-radius: 0;">
                         <thead>
@@ -87,11 +87,8 @@ $recent_collections = $stmt->fetchAll();
                             <?php if (empty($recent_collections)): ?>
                                 <tr><td colspan="5" style="text-align: center;">No collections recorded yet today.</td></tr>
                             <?php else: ?>
-                                <?php 
-                                foreach ($recent_collections as $index => $row): 
-                                    $is_extra = $index >= 5;
-                                ?>
-                                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <?php foreach ($recent_collections as $index => $row): ?>
+                                    <tr>
                                         <td data-label="S/N"><?php echo $index + 1; ?></td>
                                         <td data-label="Date"><?php echo date('Y-m-d', strtotime($row['collection_date'])); ?></td>
                                         <td data-label="Dairy Name"><strong><?php echo $row['dairy_name']; ?></strong></td>

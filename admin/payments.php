@@ -17,11 +17,11 @@ $dairy_payments = $stmt->fetchAll();
 <div class="content-card">
             <div onclick="toggleTable('dairy-revenue-collapsible', 'dr-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <i id="dr-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                    <i id="dr-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
                     <h3 style="margin: 0;">Dairy Sales Revenue</h3>
                 </div>
             </div>
-            <div id="dairy-revenue-collapsible" style="overflow: hidden;">
+            <div id="dairy-revenue-collapsible" class="expanded" style="display: block; overflow: visible;">
                 <div class="table-container">
                     <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -36,11 +36,8 @@ $dairy_payments = $stmt->fetchAll();
                     <?php if (empty($dairy_payments)): ?>
                         <tr><td colspan="4" style="text-align: center;">No sales recorded.</td></tr>
                     <?php else: ?>
-                        <?php 
-                        foreach ($dairy_payments as $index => $dp): 
-                            $is_extra = $index >= 5;
-                        ?>
-                            <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                        <?php foreach ($dairy_payments as $index => $dp): ?>
+                            <tr>
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Dairy"><?php echo $dp['dairy_name']; ?></td>
                                 <td data-label="Sold Litres"><?php echo number_format($dp['sold_litres'], 2); ?></td>

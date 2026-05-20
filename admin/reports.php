@@ -24,6 +24,19 @@ if (isset($_GET['export'])) {
         $stmt->execute([$date]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) fputcsv($output, $row);
         
+    } elseif ($type == 'farmer_collections') {
+        fputcsv($output, ['Farmer Collection Report for ' . $date]);
+        fputcsv($output, ['Farmer No', 'Name', 'Dairy', 'Quantity (L)', 'Amount (Kes)']);
+        $stmt = $pdo->prepare("SELECT f.farmer_number, f.full_name, d.name, SUM(mc.quantity), SUM(mc.total_price)
+                            FROM milk_collection mc 
+                            JOIN farmers f ON mc.farmer_id = f.id 
+                            JOIN dairies d ON f.dairy_id = d.id
+                            WHERE DATE(mc.date_collected) = ?
+                            GROUP BY f.id
+                            ORDER BY SUM(mc.quantity) DESC");
+        $stmt->execute([$date]);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) fputcsv($output, $row);
+        
     } elseif ($type == 'daily_sales') {
         fputcsv($output, ['Daily Sales Report for ' . $date]);
         fputcsv($output, ['Dairy', 'Quantity (L)', 'Amount (Kes)']);
@@ -68,14 +81,66 @@ date_default_timezone_set('Africa/Nairobi');
 $date_filter = $_GET['date'] ?? date('Y-m-d');
 
 // Get collection report for the day - Grouped by Dairy
-$stmt = $pdo->prepare("SELECT d.name as dairy_name, SUM(mc.quantity) as total_quantity, SUM(mc.total_price) as total_amount
-                    FROM milk_collection mc 
-                    JOIN dairies d ON mc.dairy_id = d.id 
-                    WHERE CAST(mc.date_collected AS DATE) = ?
-                    GROUP BY d.id
-                    ORDER BY d.name ASC");
-$stmt->execute([$date_filter]);
+$stmt = $pdo->prepare("
+    SELECT
+        d.id AS dairy_id,
+        d.name AS dairy_name,
+        COALESCE(daily_coll.total_quantity_on_day, 0) AS total_quantity,
+        COALESCE(daily_coll.total_amount_on_day, 0) AS total_amount,
+        (COALESCE(total_coll_overall.total_quantity_overall, 0) - COALESCE(total_sales_overall.total_quantity_overall, 0)) AS available_milk
+    FROM
+        dairies d
+    LEFT JOIN (
+        SELECT
+            dairy_id,
+            SUM(quantity) AS total_quantity_on_day,
+            SUM(total_price) AS total_amount_on_day
+        FROM
+            milk_collection
+        WHERE
+            CAST(date_collected AS DATE) = ?
+        GROUP BY
+            dairy_id
+    ) AS daily_coll ON d.id = daily_coll.dairy_id
+    LEFT JOIN (
+        SELECT
+            dairy_id,
+            SUM(quantity) AS total_quantity_overall
+        FROM
+            milk_collection
+        WHERE
+            CAST(date_collected AS DATE) <= ?
+        GROUP BY
+            dairy_id
+    ) AS total_coll_overall ON d.id = total_coll_overall.dairy_id
+    LEFT JOIN (
+        SELECT
+            dairy_id,
+            SUM(quantity) AS total_quantity_overall
+        FROM
+            milk_sales
+        WHERE
+            CAST(date_sold AS DATE) <= ?
+        GROUP BY
+            dairy_id
+    ) AS total_sales_overall ON d.id = total_sales_overall.dairy_id
+    ORDER BY
+        d.name ASC
+");
+$stmt->execute([$date_filter, $date_filter, $date_filter]);
 $day_collections = $stmt->fetchAll();
+
+// Get farmer-wise collection report for the day
+$stmt = $pdo->prepare("SELECT f.farmer_number, f.full_name, d.name as dairy_name, 
+                            SUM(mc.quantity) as total_quantity, SUM(mc.total_price) as total_amount
+                    FROM milk_collection mc 
+                    JOIN farmers f ON mc.farmer_id = f.id 
+                    JOIN dairies d ON f.dairy_id = d.id 
+                    WHERE DATE(mc.date_collected) = ?
+                    GROUP BY f.id
+                    ORDER BY total_quantity DESC");
+$stmt->execute([$date_filter]);
+$farmer_reports = $stmt->fetchAll();
 
 // Get sales report for the day - Grouped by Dairy
 $stmt = $pdo->prepare("SELECT d.name as dairy_name, SUM(ms.quantity) as total_quantity, SUM(ms.total_price) as total_amount
@@ -155,21 +220,24 @@ $monthly_profit = $m_rev - $m_cost;
                                 <th>Dairy Name</th>
                                 <th>Total Quantity (L)</th>
                                 <th>Total Amount (Kes)</th>
+                                <th>Available Milk (L)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($day_collections)): ?>
-                                <tr><td colspan="4" style="text-align: center;">No collections on this day.</td></tr>
+                                <tr><td colspan="5" style="text-align: center;">No collections on this day.</td></tr>
                             <?php else: ?>
-                                <?php 
-                                foreach ($day_collections as $index => $c): 
-                                    $is_extra = $index >= 5;
-                                ?>
-                                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <?php foreach ($day_collections as $index => $c): ?>
+                                    <tr>
                                         <td data-label="S/N"><?php echo $index + 1; ?></td>
                                         <td data-label="Dairy Name"><strong><?php echo $c['dairy_name']; ?></strong></td>
                                         <td data-label="Total Quantity (L)"><?php echo number_format($c['total_quantity'], 2); ?></td>
                                         <td data-label="Total Amount (Kes)"><?php echo number_format($c['total_amount'], 2); ?></td>
+                                        <td data-label="Available Milk (L)">
+                                            <span style="font-weight: 700; color: <?php echo $c['available_milk'] >= 0 ? '#2e7d32' : '#d32f2f'; ?>;">
+                                                <?php echo number_format($c['available_milk'], 2); ?>
+                                            </span>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -208,11 +276,8 @@ $monthly_profit = $m_rev - $m_cost;
                             <?php if (empty($day_sales)): ?>
                                 <tr><td colspan="4" style="text-align: center;">No sales on this day.</td></tr>
                             <?php else: ?>
-                                <?php 
-                                foreach ($day_sales as $index => $s): 
-                                    $is_extra = $index >= 5;
-                                ?>
-                                    <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                                <?php foreach ($day_sales as $index => $s): ?>
+                                    <tr>
                                         <td data-label="S/N"><?php echo $index + 1; ?></td>
                                         <td data-label="Dairy Name"><strong><?php echo $s['dairy_name']; ?></strong></td>
                                         <td data-label="Total Quantity (L)"><?php echo number_format($s['total_quantity'], 2); ?></td>
@@ -227,5 +292,70 @@ $monthly_profit = $m_rev - $m_cost;
         </div>
     </div>
 </div>
+
+<div class="row" style="margin-top: 2rem;">
+    <div class="col">
+        <div class="content-card" style="padding: 0; overflow: hidden;">
+            <div onclick="toggleTable('farmer-collapsible', 'farmer-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i id="farmer-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Farmer Collection Report</h3>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;">
+                    <input type="text" id="farmerSearch" placeholder="Filter farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;" onclick="event.stopPropagation()">
+                    <a href="?export=farmer_collections&date=<?php echo $date_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+                        <i class="fas fa-download"></i> CSV
+                    </a>
+                </div>
+            </div>
+            <div id="farmer-collapsible" class="expanded" style="display: block; overflow: visible;">
+                <div class="table-container">
+                    <table class="data-table" id="farmerTable" style="box-shadow: none; border-radius: 0;">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Farmer No.</th>
+                                <th>Full Name</th>
+                                <th>Dairy</th>
+                                <th>Quantity (L)</th>
+                                <th>Total Amount (Kes)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($farmer_reports)): ?>
+                                <tr><td colspan="6" style="text-align: center;">No farmer records for this day.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($farmer_reports as $index => $fr): ?>
+                                    <tr>
+                                        <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                        <td data-label="Farmer No."><strong><?php echo $fr['farmer_number']; ?></strong></td>
+                                        <td data-label="Full Name"><?php echo $fr['full_name']; ?></td>
+                                        <td data-label="Dairy"><?php echo trim(str_ireplace('dairy', '', $fr['dairy_name'])); ?></td>
+                                        <td data-label="Quantity (L)"><?php echo number_format($fr['total_quantity'], 2); ?></td>
+                                        <td data-label="Total Amount (Kes)"><strong><?php echo number_format($fr['total_amount'], 2); ?></strong></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('farmerSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#farmerTable tbody tr');
+    
+    rows.forEach(row => {
+        if (row.cells.length > 1) { // Skip "No records" row
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    });
+});
+</script>
 
 <?php require_once '../includes/admin_footer.php'; ?>
