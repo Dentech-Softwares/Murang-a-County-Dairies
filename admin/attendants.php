@@ -147,7 +147,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         <!-- Header/Dropdown Toggle -->
         <div onclick="toggleTable('attendants-collapsible', 'attendants-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <i id="attendants-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
+                <i id="attendants-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                 <h3 style="margin: 0;">Attendants List</h3>
             </div>
             <form action="" method="GET" style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation()">
@@ -164,7 +164,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         </div>
 
         <!-- Table Content (Collapsible) -->
-        <div id="attendants-collapsible" class="expanded" style="display: block; overflow: visible;">
+        <div id="attendants-collapsible" class="collapsed" style="display: block; overflow: visible;">
             <div class="table-container">
                 <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -181,7 +181,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                         <tr><td colspan="5" style="text-align: center;">No attendants found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($attendants as $index => $a): ?>
-                            <tr>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Full Name"><strong><?php echo $a['full_name']; ?></strong></td>
                                 <td data-label="Phone"><?php echo $a['phone']; ?></td>

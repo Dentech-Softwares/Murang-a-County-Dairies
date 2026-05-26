@@ -16,13 +16,13 @@ $farmers = $stmt->fetchAll();
     <!-- Header/Dropdown Toggle -->
     <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <i id="farmers-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
+            <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Farmers List</h3>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="farmers-collapsible" class="expanded" style="display: block; overflow: visible;">
+    <div id="farmers-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -40,7 +40,7 @@ $farmers = $stmt->fetchAll();
                         <tr><td colspan="6" style="text-align: center;">No farmers registered yet.</td></tr>
                     <?php else: ?>
                         <?php foreach ($farmers as $index => $f): ?>
-                            <tr>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Farmer No."><strong><?php echo $f['farmer_number'] ?? 'N/A'; ?></strong></td>
                                 <td data-label="Full Name"><?php echo $f['full_name']; ?></td>

@@ -111,7 +111,7 @@ $farmers = $stmt->fetchAll();
     <!-- Header/Dropdown Toggle -->
     <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <i id="farmers-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
         <a href="?export=1" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
@@ -120,7 +120,7 @@ $farmers = $stmt->fetchAll();
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="farmers-collapsible" class="expanded" style="overflow: visible; display: block;">
+    <div id="farmers-collapsible" class="collapsed" style="overflow: visible; display: block;">
         <div class="table-container">
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -136,11 +136,8 @@ $farmers = $stmt->fetchAll();
                     <?php if (empty($farmers)): ?>
                         <tr><td colspan="5" style="text-align: center;">No farmers registered yet.</td></tr>
                     <?php else: ?>
-                        <?php 
-                        foreach ($farmers as $index => $f): 
-                            $is_extra = $index >= 5;
-                        ?>
-                            <tr class="<?php echo $is_extra ? 'extra-row' : ''; ?>">
+                        <?php foreach ($farmers as $index => $f): ?>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Farmer No."><strong><?php echo $f['farmer_number'] ?? 'N/A'; ?></strong></td>
                                 <td data-label="Full Name"><?php echo $f['full_name']; ?></td>
@@ -154,5 +151,16 @@ $farmers = $stmt->fetchAll();
         </div>
     </div>
 </div>
+
+<script>
+function toggleTable(containerId, iconId) {
+    const container = document.getElementById(containerId);
+    const icon = document.getElementById(iconId);
+    if (container && icon) {
+        container.classList.toggle('expanded');
+        icon.style.transform = container.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+}
+</script>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

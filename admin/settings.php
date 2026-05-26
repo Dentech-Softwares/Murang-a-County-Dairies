@@ -89,7 +89,15 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
 </div>
 
 <div class="content-card">
-    <h3>Manage Attendant Accounts</h3>
+    <div onclick="toggleTable('attendant-settings-collapsible', 'as-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i id="as-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <h3 style="margin: 0;">Manage Attendant Accounts</h3>
+        </div>
+    </div>
+
+    <div id="attendant-settings-collapsible" class="collapsed" style="display: block; overflow: visible;">
+    <div style="padding: 1.5rem;">
     <div class="table-container">
         <table class="data-table">
         <thead>
@@ -101,8 +109,8 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($attendants as $a): ?>
-                <tr>
+            <?php foreach ($attendants as $index => $a): ?>
+                <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                     <td data-label="Name"><?php echo $a['full_name']; ?></td>
                     <td data-label="Phone"><?php echo $a['phone']; ?></td>
                     <td data-label="Dairy"><?php echo $a['dairy_name']; ?></td>
@@ -113,6 +121,8 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
             <?php endforeach; ?>
         </tbody>
         </table>
+    </div>
+    </div>
     </div>
 </div>
 

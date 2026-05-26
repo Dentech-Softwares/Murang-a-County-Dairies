@@ -385,6 +385,22 @@
         margin: 0 !important;
     }
 
+    .extra-row {
+        display: none !important;
+    }
+    .expanded .extra-row {
+        display: block !important;
+    }
+}
+
+/* Desktop truncation logic */
+.extra-row {
+    display: none !important;
+}
+.expanded .extra-row {
+    display: table-row !important;
+}
+
     .custom-dropdown-list::after {
         display: none !important;
     }

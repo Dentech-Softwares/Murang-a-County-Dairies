@@ -143,13 +143,13 @@ if (isset($_GET['success'])) $success = $_GET['success'];
     <!-- Header/Dropdown Toggle -->
     <div onclick="toggleTable('dairies-collapsible', 'dairies-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <i id="dairies-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
+            <i id="dairies-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">All Dairies</h3>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="dairies-collapsible" class="expanded" style="display: block; overflow: visible;">
+    <div id="dairies-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
     <thead>
@@ -167,7 +167,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
             <tr><td colspan="6" style="text-align: center;">No dairies registered yet.</td></tr>
         <?php else: ?>
             <?php foreach ($dairies as $index => $d): ?>
-                <tr>
+                <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                     <td data-label="S/N"><?php echo $index + 1; ?></td>
                     <td data-label="Name"><?php echo $d['name']; ?></td>
                     <td data-label="Location"><?php echo $d['location']; ?></td>

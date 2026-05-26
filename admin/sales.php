@@ -18,13 +18,13 @@ $sales = $stmt->fetchAll();
     <!-- Header/Dropdown Toggle -->
     <div onclick="toggleTable('sales-collapsible', 'sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <i id="sales-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(90deg);"></i>
+            <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Today's Sales List</h3>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="sales-collapsible" class="expanded" style="display: block; overflow: visible;">
+    <div id="sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -44,7 +44,7 @@ $sales = $stmt->fetchAll();
                         <tr><td colspan="8" style="text-align: center;">No milk sales recorded yet today.</td></tr>
                     <?php else: ?>
                         <?php foreach ($sales as $index => $s): ?>
-                            <tr>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Date"><?php echo date('Y-m-d H:i', strtotime($s['date_sold'])); ?></td>
                                 <td data-label="Dairy"><?php echo $s['dairy_name']; ?></td>

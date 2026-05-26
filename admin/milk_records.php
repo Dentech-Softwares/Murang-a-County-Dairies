@@ -57,7 +57,7 @@ $collections = $stmt->fetchAll();
     </div>
 
     <!-- Table Content (Collapsible) -->
-    <div id="milk-collapsible" class="expanded" style="display: block; overflow: visible;">
+    <div id="milk-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
             <table class="data-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -76,7 +76,7 @@ $collections = $stmt->fetchAll();
                         <tr><td colspan="7" style="text-align: center;">No milk collections recorded yet today.</td></tr>
                     <?php else: ?>
                         <?php foreach ($collections as $index => $c): ?>
-                            <tr>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Date"><?php echo date('Y-m-d', strtotime($c['collection_date'])); ?></td>
                                 <td data-label="Dairy"><strong><?php echo $c['dairy_name']; ?></strong></td>
