@@ -2,14 +2,36 @@ CREATE DATABASE IF NOT EXISTS muranga_dairy;
 USE muranga_dairy;
 
 -- Admin and Super Admin users
+-- Modified to use a roles table for scalability
 CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(15) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'super_admin') DEFAULT 'admin',
+    role_id INT, -- Link to the roles table
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Roles Table
+CREATE TABLE IF NOT EXISTS roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Permissions Table
+CREATE TABLE IF NOT EXISTS permissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL -- e.g., 'manage_users', 'view_reports', 'process_payments'
+);
+
+-- Role-Permissions Junction Table
+CREATE TABLE IF NOT EXISTS role_permissions (
+    role_id INT NOT NULL,
+    permission_id INT NOT NULL,
+    PRIMARY KEY (role_id, permission_id),
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
 -- Dairies (Cooling Plants)
@@ -82,3 +104,13 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT INTO settings (setting_key, setting_value) VALUES 
 ('buying_price', '40'), -- Price per litre from farmers
 ('selling_price', '60'); -- Price per litre to firms
+
+-- Audit Logs for commercial accountability
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    user_role VARCHAR(50),
+    action VARCHAR(255),
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

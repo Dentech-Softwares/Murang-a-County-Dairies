@@ -18,6 +18,14 @@ if (isset($pdo) && isset($_SESSION['admin_id']) && isset($_SESSION['current_sess
         exit();
     }
 }
+
+// Security: Initialize CSRF token if not exists
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+// Security: Helper for XSS protection
+function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +35,7 @@ if (isset($pdo) && isset($_SESSION['admin_id']) && isset($_SESSION['current_sess
     <title>Admin Dashboard - Murang'a County Dairy</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/all.min.css">
     <style>
         :root {
             --primary-color: #2e7d32;

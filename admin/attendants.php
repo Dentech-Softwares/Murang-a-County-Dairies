@@ -44,6 +44,10 @@ if (isset($_POST['update_attendant'])) {
 
 // Reset Password
 if (isset($_GET['reset_password'])) {
+    // CSRF Check
+    if (!isset($_GET['token']) || $_GET['token'] !== $_SESSION['csrf_token']) {
+        die("CSRF Token validation failed.");
+    }
     $reset_id = $_GET['reset_password'];
     $new_password = password_hash('123456', PASSWORD_DEFAULT);
     $stmt = $pdo->prepare("UPDATE attendants SET password = ?, must_change_password = 1 WHERE id = ?");
@@ -54,7 +58,16 @@ if (isset($_GET['reset_password'])) {
 
 // Delete Attendant
 if (isset($_GET['delete'])) {
+    // CSRF Check
+    if (!isset($_GET['token']) || $_GET['token'] !== $_SESSION['csrf_token']) {
+        die("CSRF Token validation failed.");
+    }
     $delete_id = $_GET['delete'];
+    
+    // Commercial improvement: Log the deletion
+    $log = $pdo->prepare("INSERT INTO audit_logs (user_id, user_role, action, details) VALUES (?, 'admin', 'DELETE_ATTENDANT', ?)");
+    $log->execute([$_SESSION['admin_id'], "Deleted attendant ID: $delete_id"]);
+
     $stmt = $pdo->prepare("DELETE FROM attendants WHERE id = ?");
     $stmt->execute([$delete_id]);
     header("Location: attendants.php?success=Attendant deleted successfully");
@@ -189,8 +202,8 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                                 <td data-label="Actions">
                                     <div class="action-btns">
                                         <a href="?edit=<?php echo $a['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                        <a href="?reset_password=<?php echo $a['id']; ?>" class="btn btn-primary" title="Reset Password" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #f39c12; text-decoration: none;" onclick="return confirm('Reset password to 123456?')"><i class="fas fa-key"></i></a>
-                                        <a href="?delete=<?php echo $a['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                                        <a href="?reset_password=<?php echo $a['id']; ?>&token=<?php echo $_SESSION['csrf_token']; ?>" class="btn btn-primary" title="Reset Password" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #f39c12; text-decoration: none;" onclick="return confirm('Reset password to 123456?')"><i class="fas fa-key"></i></a>
+                                        <a href="?delete=<?php echo $a['id']; ?>&token=<?php echo $_SESSION['csrf_token']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
                             </tr>

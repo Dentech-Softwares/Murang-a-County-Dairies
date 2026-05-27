@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Murang'a County Dairy - Milk Cooling Plant Management System</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/all.min.css">
     <style>
         @keyframes fadeInUp {
             from {
@@ -19,11 +19,11 @@
         }
 
         :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --bg-light: #f9fbf7;
-            --text-dark: #2c3e50;
-            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+            --primary-green: #2e7d32;
+            --dark-green: #1b5e20;
+            --bg-light: #f1f8e9; /* Light Pasture Green */
+            --text-dark: #1a1a1a;
+            --shadow-soft: 0 15px 35px rgba(27, 94, 32, 0.1);
         }
         
         * {
@@ -120,7 +120,7 @@
             max-width: 900px;
         }
         .hero h1 span {
-            color: #f39c12;
+            color: #ffa000; /* Golden accent */
         }
         .hero p {
             font-size: 1.2rem;
@@ -146,7 +146,7 @@
         }
         .btn-outline {
             padding: 15px 40px;
-            border: 2px solid #ddd;
+            border: 2px solid #2e7d32;
             color: var(--dark-green);
             text-decoration: none;
             border-radius: 12px;
@@ -423,7 +423,7 @@
 
     <nav>
         <a href="index.php" class="nav-logo">
-            <img src="muranga.png" alt="Murang'a Logo" style="height: 45px; width: auto;"> Murang'a County Dairy
+            <img src="muranga.png" alt="Murang'a Logo" style="height: 45px; width: auto;"> Murang'a Creameries Union
         </a>
         <div class="nav-btns">
             <a href="admin/login.php" class="btn-signin">Sign In</a>
@@ -432,8 +432,8 @@
     </nav>
 
     <section class="hero">
-        <h1>Murang'a County Dairy Management <span>System</span></h1>
-        <p>A specialized digital solution for Murang'a County milk cooling plants. Efficiently track collections, manage local farmers, process payments & generate reports for sustainable dairy growth.</p>
+        <h1>Murang'a County Creameries & Dairy <span>Cooperative Union</span></h1>
+        <p>Empowering over 500,000 farmers through digital transformation. A unified management solution for milk collection, farmer equity, and sustainable agricultural prosperity in the heart of Murang'a.</p>
         <div class="hero-btns">
             <a href="admin/login.php" class="btn-main"><i class="fas fa-rocket"></i> Get Started</a>
             <a href="#features" class="btn-outline">Learn More</a>

@@ -90,6 +90,63 @@ if ($type == 'monthly') $display_date = date('F Y', strtotime($date));
             </tbody>
         </table>
 
+        <?php if ($type == 'monthly'): ?>
+            <h3>Detailed Sales by Dairy & Buyer</h3>
+            <table>
+                <thead><tr><th>Dairy</th><th>Buyer</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
+                <tbody>
+                    <?php
+                    $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id WHERE MONTH(ms.date_sold) = ? AND YEAR(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC, ms.sold_to ASC");
+                    $stmt->execute([$month, $year]);
+                    while($r = $stmt->fetch()): ?>
+                        <tr>
+                            <td><?php echo $r['name']; ?></td>
+                            <td><?php echo $r['sold_to']; ?></td>
+                            <td><?php echo number_format($r['qty'], 2); ?></td>
+                            <td><?php echo number_format($r['amt'], 2); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+    <?php elseif ($type == 'daily_collections'): ?>
+        <h3>Daily Collection Report</h3>
+        <table>
+            <thead><tr><th>Dairy</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
+            <tbody>
+                <?php
+                $stmt = $pdo->prepare("SELECT d.name, SUM(mc.quantity) as qty, SUM(mc.total_price) as amt FROM milk_collection mc JOIN dairies d ON mc.dairy_id = d.id WHERE DATE(mc.date_collected) = ? GROUP BY d.id");
+                $stmt->execute([$date]);
+                while($r = $stmt->fetch()): ?>
+                    <tr>
+                        <td><strong><?php echo $r['name']; ?></strong></td>
+                        <td><?php echo number_format($r['qty'], 2); ?></td>
+                        <td><?php echo number_format($r['amt'], 2); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+    <?php elseif ($type == 'daily_sales'): ?>
+        <h3>Daily Sales Report</h3>
+        <table>
+            <thead><tr><th>Dairy</th><th>Buyer(s)</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
+            <tbody>
+                <?php
+                $stmt = $pdo->prepare("SELECT d.name, GROUP_CONCAT(DISTINCT ms.sold_to SEPARATOR ', ') as buyers, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id WHERE DATE(ms.date_sold) = ? GROUP BY d.id");
+                $stmt->execute([$date]);
+                while($r = $stmt->fetch()): ?>
+                    <tr>
+                        <td><strong><?php echo $r['name']; ?></strong></td>
+                        <td><?php echo $r['buyers'] ?: 'N/A'; ?></td>
+                        <td><?php echo number_format($r['qty'], 2); ?></td>
+                        <td><?php echo number_format($r['amt'], 2); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
     <?php elseif ($type == 'farmer_collections'): ?>
         <table>
             <thead><tr><th>Farmer No.</th><th>Full Name</th><th>Dairy</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>

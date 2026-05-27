@@ -33,7 +33,7 @@ $dairy_name = $stmt->fetchColumn();
     <title>Attendant Dashboard - <?php echo $dairy_name; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/all.min.css">
     <style>
         :root {
             --primary-color: #2e7d32;

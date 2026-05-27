@@ -52,7 +52,7 @@ if (isset($_GET['error']) && $_GET['error'] == 'logged_out') {
     <title>Attendant Login - Murang'a County Dairy</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/all.min.css">
     <style>
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -60,15 +60,28 @@ if (isset($_GET['error']) && $_GET['error'] == 'logged_out') {
         }
         .login-container {
             animation: fadeInUp 0.6s ease-out;
+            border-top: 5px solid #2e7d32;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .login-decoration {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 5rem;
+            color: rgba(46, 125, 50, 0.03);
+            transform: rotate(15deg);
         }
     </style>
 </head>
-<body style="background: #f8f9fa; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px;">
+<body style="background: #e8f5e9; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px;">
     <div class="login-container" style="max-width: 380px; padding: 2.2rem; margin: 0; width: 100%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06);">
+        <i class="fas fa-cow login-decoration"></i>
         <div style="text-align: center; margin-bottom: 1.5rem;">
             <img src="../muranga.png" alt="Murang'a Logo" style="height: 65px; width: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));">
         </div>
-        <h2 style="margin-bottom: 1.8rem; font-size: 1.4rem; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px;">Dairy Attendant Login</h2>
+        <h2 style="margin-bottom: 0.5rem; font-size: 1.4rem; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px; text-align: center;">Dairy Plant Portal</h2>
+        <p style="text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 1.8rem;">Murang'a Creameries Cooperative Union</p>
         
         <?php if ($error): ?>
             <div class="alert alert-error" style="padding: 0.7rem; margin-bottom: 1.2rem; font-size: 0.82rem; border-radius: 10px;"><?php echo $error; ?></div>
