@@ -18,6 +18,20 @@
             }
         }
 
+        .shimmer-text { 
+            background: linear-gradient(to right, #ef4444 20%, #4ade80 50%, #ffffff 80%); 
+            background-size: 200% auto; 
+            color: transparent; 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            animation: shimmer 4s linear infinite; 
+            font-weight: bold;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
         :root {
             --primary-green: #2e7d32;
             --dark-green: #1b5e20;
@@ -246,11 +260,12 @@
 
         /* Footer */
         footer {
-            padding: 80px 8% 40px;
+            padding: 80px 0 0;
             background: #fff;
             border-top: 1px solid #eee;
         }
         .footer-grid {
+            padding: 0 8% 50px;
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
             gap: 50px;
@@ -260,6 +275,9 @@
             font-size: 1.5rem;
             color: var(--dark-green);
             margin-bottom: 20px;
+        }
+        .footer-logo p {
+            color: #777;
         }
         .footer-links h4 {
             margin-bottom: 25px;
@@ -280,11 +298,15 @@
             color: var(--primary-green);
         }
         .copyright {
-            text-align: center;
-            padding-top: 40px;
-            border-top: 1px solid #eee;
-            color: #aaa;
+            padding: 25px 8%;
+            background: #111827;
+            color: #9ca3af;
             font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         @media (max-width: 992px) {
@@ -531,7 +553,11 @@
             </div>
         </div>
         <div class="copyright">
-            &copy; <?php echo date('Y'); ?> Murang'a County Dairy Management System. All rights reserved.
+            <span>&copy; 2026 Murang'a County Dairy Management System. All rights reserved.</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="d.png" alt="Dentech" style="width: 25px; height: 25px; border-radius: 50%;">
+                <p class="shimmer-text" style="font-size: 0.85rem; margin: 0;">Developed by Dentech Softwares</p>
+            </div>
         </div>
     </footer>
 
