@@ -10,7 +10,7 @@ if (!$id) {
 }
 
 // Get collection details
-$stmt = $pdo->prepare("SELECT mc.*, f.full_name as farmer_name 
+$stmt = $pdo->prepare("SELECT mc.*, f.full_name as farmer_name, f.phone, f.farmer_number 
                       FROM milk_collection mc 
                       JOIN farmers f ON mc.farmer_id = f.id 
                       WHERE mc.id = ? AND mc.dairy_id = ?");
@@ -29,10 +29,28 @@ if (isset($_POST['update_collection'])) {
     $quantity = $_POST['quantity'];
     $price_per_litre = $collection['price_per_litre'];
     $total_price = $quantity * $price_per_litre;
+    $old_quantity = $collection['quantity'];
 
     if (!empty($quantity)) {
         $stmt = $pdo->prepare("UPDATE milk_collection SET quantity = ?, total_price = ? WHERE id = ? AND dairy_id = ?");
         if ($stmt->execute([$quantity, $total_price, $id, $dairy_id])) {
+            
+            // Send Correction SMS
+            require_once '../SmsGateway.php';
+            
+            $m_stmt = $pdo->prepare("SELECT SUM(quantity) FROM milk_collection WHERE farmer_id = ? AND MONTH(date_collected) = MONTH(?) AND YEAR(date_collected) = YEAR(?)");
+            $m_stmt->execute([$collection['farmer_id'], $collection['date_collected'], $collection['date_collected']]);
+            $new_monthly_total = $m_stmt->fetchColumn() ?: 0;
+
+            $sms_message = "CORRECTION Dear " . $collection['farmer_name'] . ", F/NO:" . $collection['farmer_number'] . "\n" .
+                           "Milk record for " . date('d-M', strtotime($collection['date_collected'])) . " updated from " . $old_quantity . "L to " . number_format($quantity, 1) . "L.\n" .
+                           "New Month Total: " . number_format($new_monthly_total, 1) . "Ltrs.\n" .
+                           "Thank you.";
+
+            if (!empty($collection['phone'])) {
+                sendDairyAlert(cleanKenyanPhone($collection['phone']), $sms_message);
+            }
+
             header("Location: dashboard.php?success=Collection updated successfully");
             exit();
         } else {

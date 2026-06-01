@@ -298,6 +298,83 @@ $dairy_name = $stmt->fetchColumn();
                 icon.style.transform = "rotate(-90deg)";
             }
         }
+
+        /**
+         * Plays a notification beep using Web Audio API
+         * @param {string} type - 'success', 'error', or 'sale'
+         */
+        function playNotificationSound(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                if (type === 'success') {
+                    // A musical, ascending arpeggio (Major triad)
+                    const notes = [880.00, 1108.73, 1318.51]; // A5, C#6, E6
+                    notes.forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.06));
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime + (i * 0.06));
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.06) + 0.2);
+                        osc.connect(g);
+                        g.connect(audioCtx.destination);
+                        osc.start(audioCtx.currentTime + (i * 0.06));
+                        osc.stop(audioCtx.currentTime + (i * 0.06) + 0.2);
+                    });
+                } else if (type === 'sale') {
+                    // Refined Metallic "Coin Drop" sound (Inharmonic overtones + bowl resonance)
+                    const now = audioCtx.currentTime;
+                    const clinks = [
+                        { t: 0, f: 3100, d: 0.12 },
+                        { t: 0.03, f: 3600, d: 0.1 },
+                        { t: 0.09, f: 2700, d: 0.15 },
+                        { t: 0.14, f: 3300, d: 0.12 }
+                    ];
+                    clinks.forEach(c => {
+                        const osc = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(c.f, now + c.t);
+                        g.gain.setValueAtTime(0.1, now + c.t);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + c.t + c.d);
+                        osc.connect(g);
+                        g.connect(audioCtx.destination);
+                        osc.start(now + c.t);
+                        osc.stop(now + c.t + c.d);
+                    });
+                    // Metallic drawer resonance
+                    const oscRes = audioCtx.createOscillator();
+                    const gRes = audioCtx.createGain();
+                    oscRes.type = 'triangle';
+                    oscRes.frequency.setValueAtTime(440, now);
+                    oscRes.frequency.exponentialRampToValueAtTime(220, now + 0.5);
+                    gRes.gain.setValueAtTime(0.05, now);
+                    gRes.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    oscRes.connect(gRes);
+                    gRes.connect(audioCtx.destination);
+                    oscRes.start(now);
+                    oscRes.stop(now + 0.5);
+                } else if (type === 'error') {
+                    // A subtle, descending minor third "thud" (Bb3 to G3)
+                    const notes = [233.08, 196.00];
+                    notes.forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.12));
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime + (i * 0.12));
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.12) + 0.3);
+                        osc.connect(g);
+                        g.connect(audioCtx.destination);
+                        osc.start(audioCtx.currentTime + (i * 0.12));
+                        osc.stop(audioCtx.currentTime + (i * 0.12) + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.error("Audio playback failed:", e);
+            }
+        }
     </script>
 </head>
 <body>
@@ -307,9 +384,28 @@ $dairy_name = $stmt->fetchColumn();
         <button class="hamburger-btn" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="mobile-title">MURANG'A DAIRY</div>
-        <div class="mobile-user" onclick="toggleDropdown()">
-            <i class="fas fa-user-circle"></i>
+        <div class="mobile-title"><?php echo htmlspecialchars($dairy_name); ?></div>
+        <div class="profile-dropdown">
+            <div class="mobile-user" onclick="toggleDropdown(event)">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="dropdown-content" id="mobileProfileDropdown">
+                <div class="dropdown-info">
+                    <p>Full Name</p>
+                    <strong><?php echo $_SESSION['attendant_name']; ?></strong>
+                </div>
+                <div class="dropdown-info">
+                    <p>Dairy Plant</p>
+                    <strong><?php echo $dairy_name; ?></strong>
+                </div>
+                <div class="dropdown-info">
+                    <p>Current Date</p>
+                    <strong><?php echo date('F j, Y'); ?></strong>
+                </div>
+                <a href="../includes/logout.php" class="dropdown-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
     </div>
 
@@ -329,6 +425,31 @@ $dairy_name = $stmt->fetchColumn();
                 <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-list"></i> History</a></li>
             </ul>
         </div>
+
+        <!-- Mobile Bottom Navigation -->
+        <div class="mobile-bottom-nav" style="display: none;">
+            <a href="dashboard.php" class="nav-item <?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="farmers.php" class="nav-item <?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i>
+                <span>Farmers</span>
+            </a>
+            <a href="record_milk.php" class="nav-item <?php echo $current_page == 'record_milk.php' ? 'active' : ''; ?>">
+                <div class="fab-item">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </a>
+            <a href="sell_milk.php" class="nav-item <?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>">
+                <i class="fas fa-truck"></i>
+                <span>Sales</span>
+            </a>
+            <a href="milk_records.php" class="nav-item <?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>">
+                <i class="fas fa-history"></i>
+                <span>History</span>
+            </a>
+        </div>
         
         <div class="main-content">
             <div class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
@@ -339,7 +460,7 @@ $dairy_name = $stmt->fetchColumn();
                 </div>
                 <div class="user-info">
                 <div class="profile-dropdown">
-                    <div class="profile-trigger" onclick="toggleDropdown()">
+                    <div class="profile-trigger" onclick="toggleDropdown(event)">
                         <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
                         <div style="text-align: left;">
                             <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['attendant_name']; ?></div>
@@ -369,8 +490,18 @@ $dairy_name = $stmt->fetchColumn();
             </div>
 
             <script>
-                function toggleDropdown() {
-                    document.getElementById("profileDropdown").classList.toggle("show");
+                function toggleDropdown(event) {
+                    if (event) event.stopPropagation();
+                    const mobileDropdown = document.getElementById("mobileProfileDropdown");
+                    const desktopDropdown = document.getElementById("profileDropdown");
+                    
+                    if (window.innerWidth <= 768 && mobileDropdown) {
+                        mobileDropdown.classList.toggle("show");
+                        if (desktopDropdown) desktopDropdown.classList.remove("show");
+                    } else if (desktopDropdown) {
+                        desktopDropdown.classList.toggle("show");
+                        if (mobileDropdown) mobileDropdown.classList.remove("show");
+                    }
                 }
 
                 // Close sidebar when clicking menu items on mobile
@@ -385,17 +516,15 @@ $dairy_name = $stmt->fetchColumn();
                     });
                 });
 
-                window.onclick = function(event) {
+                // Close dropdowns when clicking or touching any other part of the screen
+                const handleOutsideInteraction = (event) => {
                     if (!event.target.closest('.profile-dropdown')) {
-                        const dropdowns = document.getElementsByClassName("dropdown-content");
-                        for (let i = 0; i < dropdowns.length; i++) {
-                            const openDropdown = dropdowns[i];
-                            if (openDropdown.classList.contains('show')) {
-                                openDropdown.classList.remove('show');
-                            }
-                        }
+                        document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
                     }
-                }
+                };
+
+                window.addEventListener('click', handleOutsideInteraction);
+                window.addEventListener('touchstart', handleOutsideInteraction);
 
                 function updateTime() {
                     const timeSpan = document.getElementById('current-time');

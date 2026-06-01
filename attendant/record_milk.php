@@ -20,7 +20,39 @@ if (isset($_POST['record_milk'])) {
         $stmt = $pdo->prepare("INSERT INTO milk_collection (dairy_id, farmer_id, attendant_id, quantity, price_per_litre, total_price) 
                               VALUES (?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$dairy_id, $farmer_id, $attendant_id, $quantity, $buying_price, $total_price])) {
-            $success = "Milk collection recorded successfully!";
+            // Task B: Integrated SMS Notification Feature
+            require_once '../SmsGateway.php';
+
+            // 1. Fetch Farmer Details (Name, Number, Phone)
+            $f_stmt = $pdo->prepare("SELECT full_name, farmer_number, phone FROM farmers WHERE id = ?");
+            $f_stmt->execute([$farmer_id]);
+            $farmer_data = $f_stmt->fetch();
+
+            // 2. Calculate Monthly Running Total (Including today's delivery)
+            $m_stmt = $pdo->prepare("SELECT SUM(quantity) FROM milk_collection WHERE farmer_id = ? AND MONTH(date_collected) = MONTH(CURRENT_DATE()) AND YEAR(date_collected) = YEAR(CURRENT_DATE())");
+            $m_stmt->execute([$farmer_id]);
+            $monthly_total = $m_stmt->fetchColumn() ?: 0;
+
+            // 3. Prepare and Send SMS Alert
+            $sms_message = "Dear " . $farmer_data['full_name'] . ", F/NO:" . $farmer_data['farmer_number'] . "\n" .
+                           "Your milk collection today is " . number_format($quantity, 1) . "Ltrs.\n" .
+                           "Your collection this month is " . number_format($monthly_total, 1) . "Ltrs.\n" .
+                           "Thank you.";
+
+            if (!empty($farmer_data['phone'])) {
+                $response = sendDairyAlert(cleanKenyanPhone($farmer_data['phone']), $sms_message);
+                $resData = json_decode($response, true);
+                
+                 // OpenSMS v3 returns 'status' as 'success' or an integer 200/201
+                $isSuccess = isset($resData['status']) && 
+                             (strtolower($resData['status']) === 'success' || $resData['status'] == 200 || $resData['status'] == 201);
+
+                if ($isSuccess) {
+                    $success = "Milk collection recorded and SMS sent to " . htmlspecialchars($farmer_data['full_name']);
+                } else {
+                    $success = "Collection recorded successfully, but the SMS alert could not be sent.";
+                }
+            }
         } else {
             $error = "Failed to record collection.";
         }
@@ -36,6 +68,12 @@ $farmers = $stmt->fetchAll();
 
 <?php if ($success): ?>
     <div class="alert alert-success"><?php echo $success; ?></div>
+    <script>document.addEventListener('DOMContentLoaded', () => playNotificationSound('success'));</script>
+<?php endif; ?>
+
+<?php if ($error): ?>
+    <div class="alert alert-error"><?php echo $error; ?></div>
+    <script>document.addEventListener('DOMContentLoaded', () => playNotificationSound('error'));</script>
 <?php endif; ?>
 
 <div class="content-card" style="text-align: left; margin-bottom: 2rem; max-width: 600px; position: relative;">
@@ -54,8 +92,8 @@ $farmers = $stmt->fetchAll();
                 <div id="farmer_dropdown" class="custom-dropdown-list">
                     <?php foreach ($farmers as $f): ?>
                         <div class="dropdown-item" data-id="<?php echo $f['id']; ?>" 
-                             data-name="<?php echo htmlspecialchars($f['full_name']); ?>" 
-                             data-number="<?php echo $f['farmer_number']; ?>">
+                                data-name="<?php echo htmlspecialchars($f['full_name']); ?>" 
+                                data-number="<?php echo $f['farmer_number']; ?>">
                             <div class="item-number"><?php echo $f['farmer_number']; ?></div>
                             <div class="item-name"><?php echo htmlspecialchars($f['full_name']); ?></div>
                         </div>
@@ -77,25 +115,39 @@ $farmers = $stmt->fetchAll();
     width: 100%;
 }
 .custom-dropdown-list {
-    position: fixed;
+    position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 200px;    /* Slightly thinner strip */
+    left: calc(100% + 15px);
+    width: 210px;
     background: #ffffff !important;
     height: auto;
-    max-height: 85vh;
+    max-height: 750px;
     overflow-y: auto;
     z-index: 9999;
     display: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    border-left: 4px solid #2ecc71; /* Green anchor line */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border-left: 4px solid #2ecc71;
     border-radius: 12px;
     padding: 10px 0;
-    animation: slideInCenter 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
-@keyframes slideInCenter {
-    from { opacity: 0; transform: translateY(-50%) translateX(20px); }
-    to { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+@media (max-width: 768px) {
+    .custom-dropdown-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        transform: none;
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+        margin-top: 5px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        border-left: 4px solid #2ecc71;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 }
 .dropdown-item {
     padding: 10px 15px;
@@ -147,21 +199,6 @@ $farmers = $stmt->fetchAll();
     background: #2ecc71; /* Green scrollbar handle */
     border-radius: 10px;
 }
-@media (max-width: 768px) {
-    .custom-dropdown-list {
-        position: absolute !important;
-        left: 0 !important;
-        right: 0 !important;
-        top: 100% !important;
-        width: 100% !important;
-        height: 300px !important;
-        min-height: unset; /* Reset min-height for mobile */
-        margin-top: 5px;
-        border: 2px solid #2ecc71 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-    }
-}
 </style>
 
 <script>
@@ -170,19 +207,16 @@ const dropdown = document.getElementById('farmer_dropdown');
 const selectedIdInput = document.getElementById('selected_farmer_id');
 const items = dropdown.getElementsByClassName('dropdown-item');
 
+// Strictly for mobile: Trigger numeric keyboard by default for farmer search
+if (window.innerWidth <= 768) {
+    searchInput.setAttribute('inputmode', 'numeric');
+}
+
 function positionDropdown() {
-    if (window.innerWidth > 768) {
-        // Move strip to the left to leave 300px to the right side of the strip
-        dropdown.style.left = 'auto';
-        dropdown.style.right = '300px';
-    } else {
-        dropdown.style.left = '0';
-        dropdown.style.right = 'auto';
-    }
+    // Positioning is now handled by CSS classes and media queries.
 }
 
 searchInput.addEventListener('focus', () => {
-    positionDropdown();
     dropdown.style.display = 'block';
 });
 

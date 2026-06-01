@@ -1,6 +1,7 @@
 <?php
 require_once '../includes/db_connect.php';
 require_once '../includes/admin_header.php';
+require_once '../includes/ReportService.php'; // Add this
 
 // Get today's sales
 $stmt = $pdo->query("SELECT ms.*, d.name as dairy_name, a.full_name as attendant_name
@@ -10,6 +11,11 @@ $stmt = $pdo->query("SELECT ms.*, d.name as dairy_name, a.full_name as attendant
                     WHERE DATE(ms.date_sold) = CURDATE()
                     ORDER BY ms.date_sold DESC");
 $sales = $stmt->fetchAll();
+
+// Monthly Sales by Dairy & Buyer
+$service = new ReportService($pdo); // Add this
+$month_filter = $_GET['month_filter'] ?? date('Y-m'); // Default to current month
+$monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01'); // ReportService expects a full date
 ?>
 
 <h2>Milk Sales Records</h2>
@@ -53,6 +59,57 @@ $sales = $stmt->fetchAll();
                                 <td data-label="Rate (Kes)"><?php echo number_format($s['price_per_litre'], 2); ?></td>
                                 <td data-label="Total Amount (Kes)"><strong><?php echo number_format($s['total_price'], 2); ?></strong></td>
                                 <td data-label="Sold By"><?php echo $s['attendant_name'] ?: '<em>System</em>'; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="content-card" style="margin-top: 2rem; padding: 0; overflow: hidden;">
+    <!-- Header/Dropdown Toggle for Monthly Sales -->
+    <div onclick="toggleTable('monthly-sales-collapsible', 'monthly-sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i id="monthly-sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <h3 style="margin: 0; font-size: 1.1rem;">Monthly Sales by Dairy & Buyer</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation()">
+            <form action="" method="GET" style="display: flex; align-items: center; gap: 0.8rem;">
+                <label style="font-weight: 600; white-space: nowrap; font-size: 0.85rem; color: #555;">Select Month:</label>
+                <input type="month" name="month_filter" value="<?php echo htmlspecialchars($month_filter); ?>" onchange="this.form.submit()" class="form-control" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #eee; cursor: pointer; flex-grow: 1; font-size: 0.85rem;">
+            </form>
+            <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+                <i class="fas fa-download"></i> CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Table Content (Collapsible) -->
+    <div id="monthly-sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
+        <div class="table-container">
+            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Dairy</th>
+                        <th>Buyer</th>
+                        <th>Quantity (L)</th>
+                        <th>Total Amount (Kes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($monthly_detailed_sales)): ?>
+                        <tr><td colspan="5" style="text-align: center;">No sales recorded for <?php echo date('F Y', strtotime($month_filter)); ?>.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($monthly_detailed_sales as $index => $s): ?>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
+                                <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Dairy"><strong><?php echo htmlspecialchars($s['name']); ?></strong></td>
+                                <td data-label="Buyer"><?php echo htmlspecialchars($s['sold_to']); ?></td>
+                                <td data-label="Quantity (L)"><?php echo number_format($s['qty'], 2); ?></td>
+                                <td data-label="Total Amount (Kes)"><strong><?php echo number_format($s['amt'], 2); ?></strong></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

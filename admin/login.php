@@ -81,6 +81,9 @@ if (isset($_GET['error']) && $_GET['error'] == 'logged_out') {
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label for="password" style="font-size: 0.82rem; margin-bottom: 0.4rem; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
                 <input type="password" id="password" name="password" required placeholder="Enter your password" style="padding: 0.75rem; border-radius: 12px; border: 1.5px solid #eee;">
+                <div style="text-align: right; margin-top: 8px;">
+                    <a href="forgot_password.php" style="font-size: 0.75rem; color: var(--primary-color); text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary" style="padding: 0.85rem; font-weight: 700; width: 100%; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Login</button>
         </form>

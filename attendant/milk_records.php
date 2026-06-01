@@ -78,7 +78,21 @@ require_once '../includes/attendant_header.php';
 ?>
 
 <script>
-    setInterval(() => { if (!document.hidden) location.reload(); }, 30000);
+    /**
+     * Silent background refresh for History tables
+     */
+    async function silentRefreshRecords() {
+        if (document.hidden) return;
+        try {
+            const response = await fetch(window.location.href);
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            
+            document.querySelector('#coll-collapsible .table-container').innerHTML = doc.querySelector('#coll-collapsible .table-container').innerHTML;
+            document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
+        } catch (e) { console.error("Records sync failed", e); }
+    }
+    setInterval(silentRefreshRecords, 30000);
 </script>
 
 <?php
@@ -186,7 +200,7 @@ $success = $_GET['success'] ?? null;
                 <i id="coll-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Collections History</h3>
             </div>
-            <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+            <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
                 <i class="fas fa-download"></i> CSV
             </a>
         </div>
@@ -242,7 +256,7 @@ $success = $_GET['success'] ?? null;
                 <i id="sales-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Sales History</h3>
             </div>
-            <a href="?export=sales&date=<?php echo $date_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+            <a href="?export=sales&date=<?php echo $date_filter; ?>" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
                 <i class="fas fa-download"></i> CSV
             </a>
         </div>

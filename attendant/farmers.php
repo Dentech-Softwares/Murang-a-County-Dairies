@@ -35,6 +35,20 @@ $success = '';
 $error = '';
 $dairy_id = $_SESSION['dairy_id'];
 
+// Handle Deletion
+if (isset($_GET['delete'])) {
+    $delete_id = $_GET['delete'];
+    try {
+        $stmt = $pdo->prepare("DELETE FROM farmers WHERE id = ? AND dairy_id = ?");
+        $stmt->execute([$delete_id, $dairy_id]);
+        $_SESSION['success_msg'] = "Farmer deleted successfully.";
+        header("Location: farmers.php");
+        exit();
+    } catch (PDOException $e) {
+        $error = "Cannot delete farmer. They might have existing milk records.";
+    }
+}
+
 if (isset($_POST['add_farmer'])) {
     $name = $_POST['full_name'];
     $phone = $_POST['phone'];
@@ -82,7 +96,19 @@ $farmers = $stmt->fetchAll();
 <h2>Manage Farmers</h2>
 
 <script>
-    setInterval(() => { if (!document.hidden) location.reload(); }, 60000);
+    /**
+     * Silent background refresh for Farmer list
+     */
+    async function silentRefreshFarmers() {
+        if (document.hidden) return;
+        try {
+            const response = await fetch(window.location.href);
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
+        } catch (e) { console.error("Farmer sync failed", e); }
+    }
+    setInterval(silentRefreshFarmers, 60000);
 </script>
 
 <?php if ($success): ?>
@@ -114,8 +140,8 @@ $farmers = $stmt->fetchAll();
             <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
-        <a href="?export=1" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-            <i class="fas fa-download"></i> Download CSV
+        <a href="?export=1" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
+            <i class="fas fa-download"></i> CSV
         </a>
     </div>
 
@@ -130,6 +156,7 @@ $farmers = $stmt->fetchAll();
                         <th>Full Name</th>
                         <th>Phone</th>
                         <th>Registered On</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -143,6 +170,12 @@ $farmers = $stmt->fetchAll();
                                 <td data-label="Full Name"><?php echo $f['full_name']; ?></td>
                                 <td data-label="Phone"><?php echo $f['phone']; ?></td>
                                 <td data-label="Registered On"><?php echo date('Y-m-d', strtotime($f['created_at'])); ?></td>
+                                <td data-label="Actions">
+                                    <div class="action-btns">
+                                        <a href="edit_farmer.php?id=<?php echo $f['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
+                                        <a href="?delete=<?php echo $f['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure you want to delete this farmer?')"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

@@ -391,6 +391,32 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
                 <li><a href="settings.php" class="<?php echo $current_page == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
         </div>
+
+        <!-- Mobile Bottom Navigation for Admins -->
+        <div class="mobile-bottom-nav" style="display: none;">
+            <a href="dashboard.php" class="nav-item <?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>">
+                <i class="fas fa-chart-line"></i>
+                <span>Dash</span>
+            </a>
+            <a href="farmers.php" class="nav-item <?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i>
+                <span>Farmers</span>
+            </a>
+            <a href="reports.php" class="nav-item <?php echo $current_page == 'reports.php' ? 'active' : ''; ?>">
+                <div class="fab-item">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+            </a>
+            <a href="milk_records.php" class="nav-item <?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>">
+                <i class="fas fa-list"></i>
+                <span>Records</span>
+            </a>
+            <a href="settings.php" class="nav-item <?php echo $current_page == 'settings.php' ? 'active' : ''; ?>">
+                <i class="fas fa-cog"></i>
+                <span>Setup</span>
+            </a>
+        </div>
+
         <div class="main-content">
             <div class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="top-bar-left" style="display: flex; align-items: center; gap: 15px; color: #666; font-size: 0.95rem;">

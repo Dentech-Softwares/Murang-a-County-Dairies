@@ -36,15 +36,19 @@ if (isset($_POST['add_attendant'])) {
             $stmt->execute([$full_name, $phone, $dairy_id, $password]);
             $success = "Attendant added successfully! Default password is '123456'.";
         } catch (PDOException $e) {
-            $error = "Phone number already exists.";
+            if ($e->getCode() == 23000) {
+                $error = "Email or phone number already exists.";
+            } else {
+                $error = "Database Error: " . $e->getMessage();
+            }
         }
     }
 }
 
 // Get Dairies and their Attendants
 $stmt = $pdo->query("SELECT d.*, 
-                    (SELECT GROUP_CONCAT(full_name SEPARATOR ', ') FROM attendants WHERE dairy_id = d.id) as attendant_names,
-                    (SELECT GROUP_CONCAT(phone SEPARATOR ', ') FROM attendants WHERE dairy_id = d.id) as attendant_phones
+                    (SELECT GROUP_CONCAT(full_name SEPARATOR '<br>') FROM attendants WHERE dairy_id = d.id) as attendant_names,
+                    (SELECT GROUP_CONCAT(phone SEPARATOR '<br>') FROM attendants WHERE dairy_id = d.id) as attendant_phones
                     FROM dairies d ORDER BY d.created_at ASC");
 $dairies = $stmt->fetchAll();
 

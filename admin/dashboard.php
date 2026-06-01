@@ -15,13 +15,19 @@ $total_cost = $pdo->query("SELECT SUM(total_price) FROM milk_collection WHERE DA
 $total_profit = $total_revenue - $total_cost;
 
 // Recent Activities (Milk Collections Grouped by Dairy and Date - Today Only)
-$stmt = $pdo->query("SELECT DATE(mc.date_collected) as collection_date, d.name as dairy_name, SUM(mc.quantity) as total_quantity, SUM(mc.total_price) as total_amount
-                    FROM milk_collection mc 
-                    JOIN dairies d ON mc.dairy_id = d.id 
-                    WHERE DATE(mc.date_collected) = CURDATE()
-                    GROUP BY DATE(mc.date_collected), d.id
-                    ORDER BY collection_date DESC, total_quantity DESC");
-$recent_collections = $stmt->fetchAll();
+$stmt = $pdo->query("SELECT 
+                        d.name as dairy_name,
+                        COALESCE((SELECT SUM(quantity) FROM milk_collection WHERE dairy_id = d.id AND DATE(date_collected) = CURDATE()), 0) as collected_quantity,
+                        COALESCE((SELECT SUM(quantity) FROM milk_sales WHERE dairy_id = d.id AND DATE(date_sold) = CURDATE()), 0) as sold_quantity,
+                        (
+                            COALESCE((SELECT SUM(quantity) FROM milk_collection WHERE dairy_id = d.id), 0) - 
+                            COALESCE((SELECT SUM(quantity) FROM milk_sales WHERE dairy_id = d.id), 0)
+                        ) as available_quantity
+                    FROM dairies d 
+                    WHERE EXISTS (SELECT 1 FROM milk_collection WHERE dairy_id = d.id AND DATE(date_collected) = CURDATE())
+                       OR EXISTS (SELECT 1 FROM milk_sales WHERE dairy_id = d.id AND DATE(date_sold) = CURDATE())
+                    ORDER BY d.name ASC");
+$daily_dairy_summary = $stmt->fetchAll();
 ?>
 
 <h2>Dashboard Overview</h2>
@@ -66,7 +72,7 @@ $recent_collections = $stmt->fetchAll();
             <div onclick="toggleTable('collapsible-table', 'toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <i id="toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-                    <h3 style="margin: 0; font-size: 1.1rem;">Today's Collections by Dairy</h3>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Today's Activities</h3>
                 </div>
             </div>
 
@@ -77,23 +83,23 @@ $recent_collections = $stmt->fetchAll();
                         <thead>
                             <tr>
                                 <th>S/N</th>
-                                <th>Date</th>
                                 <th>Dairy Name</th>
-                                <th>Total Quantity (L)</th>
-                                <th>Total Amount (Kes)</th>
+                                <th>Collected (L)</th>
+                                <th>Sold (L)</th>
+                                <th>Available (L)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($recent_collections)): ?>
-                                <tr><td colspan="5" style="text-align: center;">No collections recorded yet today.</td></tr>
+                            <?php if (empty($daily_dairy_summary)): ?>
+                                <tr><td colspan="5" style="text-align: center;">No collections or sales recorded yet today.</td></tr>
                             <?php else: ?>
-                                <?php foreach ($recent_collections as $index => $row): ?>
+                                <?php foreach ($daily_dairy_summary as $index => $row): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                         <td data-label="S/N"><?php echo $index + 1; ?></td>
-                                        <td data-label="Date"><?php echo date('Y-m-d', strtotime($row['collection_date'])); ?></td>
                                         <td data-label="Dairy Name"><strong><?php echo $row['dairy_name']; ?></strong></td>
-                                        <td data-label="Total Quantity (L)"><?php echo number_format($row['total_quantity'], 2); ?></td>
-                                        <td data-label="Total Amount (Kes)"><?php echo number_format($row['total_amount'], 2); ?></td>
+                                        <td data-label="Collected (L)"><?php echo number_format($row['collected_quantity'], 2); ?></td>
+                                        <td data-label="Sold (L)"><?php echo number_format($row['sold_quantity'], 2); ?></td>
+                                        <td data-label="Available (L)"><strong><?php echo number_format($row['available_quantity'], 2); ?></strong></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>

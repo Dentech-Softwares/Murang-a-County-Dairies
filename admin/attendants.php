@@ -18,7 +18,11 @@ if (isset($_POST['add_attendant'])) {
             $stmt->execute([$full_name, $phone, $dairy_id, $password]);
             $success = "Attendant added successfully! Default password is '123456'.";
         } catch (PDOException $e) {
-            $error = "Phone number already exists.";
+            if ($e->getCode() == 23000) {
+                $error = "Email or phone number already exists.";
+            } else {
+                $error = "Database Error: " . $e->getMessage();
+            }
         }
     }
 }
@@ -37,7 +41,11 @@ if (isset($_POST['update_attendant'])) {
             header("Location: attendants.php?success=Attendant updated successfully");
             exit();
         } catch (PDOException $e) {
-            $error = "Phone number already exists.";
+            if ($e->getCode() == 23000) {
+                $error = "Email or phone number already exists.";
+            } else {
+                $error = "Database Error: " . $e->getMessage();
+            }
         }
     }
 }

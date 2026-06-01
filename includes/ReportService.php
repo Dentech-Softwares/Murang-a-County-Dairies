@@ -9,15 +9,18 @@ class ReportService {
     public function getDailySummary($date) {
         $stmt = $this->pdo->prepare("
             SELECT d.id AS dairy_id, d.name AS dairy_name,
-            COALESCE(daily_coll.qty, 0) AS total_quantity,
-            COALESCE(daily_coll.amt, 0) AS total_amount,
-            (COALESCE(cum_coll.qty, 0) - COALESCE(cum_sales.qty, 0)) AS available_milk
+            COALESCE(SUM(CASE WHEN DATE(mc.date_collected) = ? THEN mc.quantity ELSE 0 END), 0) AS total_quantity,
+            COALESCE(SUM(CASE WHEN DATE(mc.date_collected) = ? THEN mc.total_price ELSE 0 END), 0) AS total_amount,
+            (
+                COALESCE((SELECT SUM(quantity) FROM milk_collection WHERE dairy_id = d.id AND DATE(date_collected) <= ?), 0) - 
+                COALESCE((SELECT SUM(quantity) FROM milk_sales WHERE dairy_id = d.id AND DATE(date_sold) <= ?), 0)
+            ) AS available_milk
             FROM dairies d
-            LEFT JOIN (SELECT dairy_id, SUM(quantity) AS qty, SUM(total_price) AS amt FROM milk_collection WHERE DATE(date_collected) = ? GROUP BY dairy_id) AS daily_coll ON d.id = daily_coll.dairy_id
-            LEFT JOIN (SELECT dairy_id, SUM(quantity) AS qty FROM milk_collection WHERE DATE(date_collected) <= ? GROUP BY dairy_id) AS cum_coll ON d.id = cum_coll.dairy_id
-            LEFT JOIN (SELECT dairy_id, SUM(quantity) AS qty FROM milk_sales WHERE DATE(date_sold) <= ? GROUP BY dairy_id) AS cum_sales ON d.id = cum_sales.dairy_id
-            ORDER BY d.name ASC");
-        $stmt->execute([$date, $date, $date]);
+            LEFT JOIN milk_collection mc ON d.id = mc.dairy_id
+            GROUP BY d.id
+            ORDER BY d.name ASC
+        ");
+        $stmt->execute([$date, $date, $date, $date]);
         return $stmt->fetchAll();
     }
 

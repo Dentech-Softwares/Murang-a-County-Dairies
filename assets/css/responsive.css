@@ -3,15 +3,14 @@
    STRICTLY preserving desktop UI/UX for screens > 1024px
 */
 
-/* Reset and Base Mobile Adjustments */
-@media (max-width: 1024px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 1.25rem !important;
-    }
-}
-
 @media (max-width: 768px) {
+    :root {
+        --mobile-primary: #2e7d32;
+        --mobile-bg: #f8fafc;
+        --nav-height: 65px;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+    }
+
     /* 0. BASE MOBILE RESET */
     body {
         font-size: 14px !important;
@@ -27,11 +26,16 @@
         width: 100% !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        background: white !important;
+        border-radius: 12px !important;
+        border: 1px solid #f1f5f9 !important;
+        margin-bottom: 1rem !important;
     }
 
     .main-content {
         padding: 15px !important;
-        margin-top: 60px !important; /* Space for fixed mobile header */
+        margin-top: 65px !important; 
+        padding-bottom: calc(var(--nav-height) + 20px) !important;
         width: 100% !important;
     }
 
@@ -88,15 +92,67 @@
         align-items: center;
         padding: 0 15px;
         height: 60px;
-        background: #f4f9f4;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(10px);
         color: var(--primary-color);
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1500;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 1px 10px rgba(0,0,0,0.05);
         border-bottom: 1px solid #e0eee0;
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-height);
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border-top: 1px solid #edf2f7;
+        z-index: 2000;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 10px;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 700;
+        gap: 4px;
+    }
+
+    .nav-item i {
+        font-size: 1.25rem;
+    }
+
+    .nav-item.active {
+        color: var(--mobile-primary);
+    }
+
+    .fab-item {
+        margin-top: -35px;
+        background: var(--mobile-primary);
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        border: 4px solid white;
     }
 
     .mobile-title {
@@ -105,6 +161,23 @@
         color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 1px;
+        max-width: 50%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-header .profile-dropdown {
+        position: relative;
+    }
+
+    .mobile-header .dropdown-content {
+        top: 50px !important;
+        right: 0 !important;
+        width: 240px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        border: 1px solid #eee !important;
+        z-index: 2100 !important;
     }
 
     .hamburger-btn {
@@ -170,36 +243,31 @@
     /* 3. DASHBOARD (ATTRACTIVE CARDS) */
     .stats-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
         margin-bottom: 30px !important;
     }
 
     .stat-card {
         width: 100% !important;
         margin: 0 !important;
-        padding: 24px !important;
-        border-radius: 20px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
+        padding: 6px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
         border: 1px solid rgba(0,0,0,0.03) !important;
         display: flex !important;
         align-items: center !important;
         text-align: left !important;
-        gap: 24px !important;
+        gap: 6px !important;
         background: white !important;
-        transition: transform 0.2s ease !important;
-    }
-
-    .stat-card:active {
-        transform: scale(0.98) !important;
+        min-height: 60px !important;
     }
 
     .stat-card i {
-        margin-bottom: 0 !important;
-        font-size: 1.6rem !important;
-        width: 60px !important;
-        height: 60px !important;
-        min-width: 60px !important;
+        font-size: 0.85rem !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -210,85 +278,71 @@
     }
 
     .stat-card .value {
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-        color: #111827 !important; /* Near black for better contrast */
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
         line-height: 1.1 !important;
-        letter-spacing: -0.5px !important;
+        letter-spacing: -0.2px !important;
     }
 
     .stat-card h3 {
-        margin-bottom: 4px !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
+        margin-bottom: 0px !important;
+        font-size: 0.5rem !important;
+        font-weight: 700 !important;
         color: #6b7280 !important; /* Medium gray */
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
     }
 
-    /* 4. TABLES → PROFESSIONAL MOBILE VIEW (CARD TRANSFORMATION) */
-    .data-table {
-        background: transparent !important;
+    /* 4. TABLES → CLEAN SCROLLABLE VIEW */
+    .content-card {
+        border-radius: 16px !important;
+        border: 1px solid #f1f5f9 !important;
+    }
+
+    .data-table, table {
+        background: white !important;
         box-shadow: none !important;
+        min-width: 750px !important; /* Force scroll to prevent overlapping */
+        width: 100% !important;
+        border-collapse: collapse !important;
     }
 
     .data-table thead {
-        display: none !important; /* Hide table headers on mobile */
+        display: table-header-group !important;
     }
 
     .data-table tr {
-        display: block !important;
-        background: white !important;
-        margin-bottom: 20px !important;
-        padding: 20px !important;
-        border-radius: 20px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
-        border: 1px solid rgba(0,0,0,0.02) !important;
-        position: relative !important;
+        display: table-row !important;
     }
 
-    .data-table td {
+    .data-table td, .data-table th, table td, table th {
+        display: table-cell !important;
+        padding: 12px 10px !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap !important;
+        text-align: left !important;
+    }
+
+    /* Compact Action Buttons for Scrollable Tables */
+    .action-btns, td .action-btns {
         display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        text-align: right !important;
-        padding: 10px 0 !important;
+        gap: 6px !important;
+        width: auto !important;
+        justify-content: flex-start !important;
         border: none !important;
-        font-size: 0.85rem !important;
-        color: #1f2937 !important;
-        border-bottom: 1px solid #f9fafb !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    .data-table td:last-child {
-        border-bottom: none !important;
-        padding-top: 12px !important;
-        margin-top: 5px !important;
-        justify-content: center !important;
-    }
-
-    .data-table td::before {
-        content: attr(data-label) !important;
-        float: left !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        font-size: 0.7rem !important;
-        color: #9ca3af !important;
-        letter-spacing: 0.5px !important;
-    }
-
-    .action-btns {
-        display: flex !important;
-        gap: 10px !important;
-        width: 100% !important;
-        justify-content: space-around !important;
-    }
-
-    .action-btns a, .action-btns button {
-        flex: 1 !important;
-        justify-content: center !important;
-        padding: 10px !important;
-        border-radius: 10px !important;
-        font-size: 0.9rem !important;
+    .action-btns a, .action-btns button, td .action-btns a {
+        flex: none !important;
+        padding: 6px 10px !important;
+        border-radius: 6px !important;
+        font-size: 0.8rem !important;
+        width: auto !important;
+        display: inline-flex !important;
+        align-items: center !important;
     }
 
     /* 5. FORMS (CLEAN & TOUCH-FRIENDLY) */
@@ -325,18 +379,9 @@
         color: white !important;
     }
 
-    /* Action buttons in cards */
-    .action-btns {
-        border-top: 1px solid #f5f5f5 !important;
-        margin-top: 15px !important;
-        padding-top: 15px !important;
-    }
-
-    .action-btns .btn {
-        margin: 0 !important;
-        padding: 12px !important;
-        font-size: 0.85rem !important;
-        border-radius: 8px !important;
+    .btn-export {
+        padding: 6px 12px !important;
+        font-size: 0.75rem !important;
     }
 
     /* 7. VISUAL IMPROVEMENTS */
@@ -362,6 +407,8 @@
     /* Collapsible Table Header (Dashboard) */
     div[onclick*="toggleTable"] {
         padding: 15px !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
     }
 
     div[onclick*="toggleTable"] h3 {
@@ -376,32 +423,35 @@
     /* Record Milk Custom Dropdown Fix */
     .custom-dropdown-list {
         position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90% !important;
-        max-height: 80vh !important;
-        right: auto !important;
+        top: 75px !important; /* Positioned higher, safely below mobile header (60px) */
+        right: 0 !important;
+        left: auto !important;
+        transform: none !important;
+        width: 160px !important; /* Thin strip width */
+        height: auto !important; /* Allows shrinking/expanding based on search */
+        max-height: 38vh !important; /* Strictly constrained to the top half to clear the keyboard */
         margin: 0 !important;
+        border-radius: 12px 0 0 12px !important; /* Premium rounded edge on the inner side */
+        border: 2px solid #2ecc71 !important;
+        border-right: none !important;
+        z-index: 2500 !important; /* Above main content but below overlays if any */
+        background: white !important;
+        box-shadow: -4px 4px 15px rgba(0,0,0,0.1) !important;
+        padding: 5px 0 !important;
     }
 
     .extra-row {
         display: none !important;
     }
     .expanded .extra-row {
-        display: block !important;
+        display: table-row !important;
     }
 }
 
 /* Desktop truncation logic */
 .extra-row {
-    display: none !important;
+    display: none;
 }
 .expanded .extra-row {
-    display: table-row !important;
-}
-
-    .custom-dropdown-list::after {
-        display: none !important;
-    }
+    display: table-row;
 }

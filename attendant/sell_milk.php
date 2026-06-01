@@ -49,9 +49,11 @@ if (isset($_POST['record_sale'])) {
 
 <?php if ($success): ?>
     <div class="alert alert-success"><?php echo $success; ?></div>
+    <script>document.addEventListener('DOMContentLoaded', () => playNotificationSound('sale'));</script>
 <?php endif; ?>
 <?php if ($error): ?>
     <div class="alert alert-error"><?php echo $error; ?></div>
+    <script>document.addEventListener('DOMContentLoaded', () => playNotificationSound('error'));</script>
 <?php endif; ?>
 
 <div class="content-card" style="text-align: left; max-width: 600px; margin-bottom: 2rem;">
