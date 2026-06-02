@@ -28,7 +28,28 @@ $stmt = $pdo->query("SELECT
                        OR EXISTS (SELECT 1 FROM milk_sales WHERE dairy_id = d.id AND DATE(date_sold) = CURDATE())
                     ORDER BY d.name ASC");
 $daily_dairy_summary = $stmt->fetchAll();
+
+// Data for Chart.js Trends (Last 7 Days)
+$stmt = $pdo->query("SELECT DATE(date_collected) as d, SUM(quantity) as q FROM milk_collection WHERE date_collected >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$col_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$stmt = $pdo->query("SELECT DATE(date_sold) as d, SUM(quantity) as q FROM milk_sales WHERE date_sold >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$sale_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$chart_labels = [];
+$chart_collections = [];
+$chart_sales = [];
+
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $chart_labels[] = date('M d', strtotime($date));
+    $chart_collections[] = $col_data[$date] ?? 0;
+    $chart_sales[] = $sale_data[$date] ?? 0;
+}
 ?>
+
+<!-- Add Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <h2>Dashboard Overview</h2>
 
@@ -62,6 +83,17 @@ $daily_dairy_summary = $stmt->fetchAll();
         <i class="fas fa-coins" style="color: #ffa000; background: #fff8e1;"></i>
         <h3>Today's Profit</h3>
         <div class="value" style="color: #ffa000;">Kes <?php echo number_format($total_profit, 0); ?></div>
+    </div>
+</div>
+
+<div class="row" style="margin-top: 2rem;">
+    <div class="col" style="flex: 1;">
+        <div class="content-card">
+            <h3 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem;">Milk Trends (Last 7 Days)</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="milkTrendsChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -120,6 +152,38 @@ function toggleTable(containerId, iconId) {
         icon.style.transform = container.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 }
+
+// Initialize Chart
+const ctx = document.getElementById('milkTrendsChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?php echo json_encode($chart_labels); ?>,
+        datasets: [{
+            label: 'Collected (Litres)',
+            data: <?php echo json_encode($chart_collections); ?>,
+            borderColor: '#2e7d32',
+            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Sold (Litres)',
+            data: <?php echo json_encode($chart_sales); ?>,
+            borderColor: '#1976d2',
+            backgroundColor: 'rgba(25, 118, 210, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } }
+    }
+});
 </script>
 
 <?php require_once '../includes/admin_footer.php'; ?>

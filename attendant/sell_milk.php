@@ -22,12 +22,17 @@ $sold = $total_sold->fetchColumn() ?: 0;
 $available_stock = $collected - $sold;
 
 if (isset($_POST['record_sale'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $sold_to = $_POST['sold_to'];
     $quantity = $_POST['quantity'];
     $total_price = $quantity * $selling_price;
     $attendant_id = $_SESSION['attendant_id'];
 
-    if (!empty($sold_to) && !empty($quantity)) {
+    if (!empty($sold_to) && !empty($quantity) && $quantity > 0) {
         if ($quantity > $available_stock) {
             $error = "Insufficient stock! Only " . number_format($available_stock, 2) . " L available.";
         } else {
@@ -41,6 +46,8 @@ if (isset($_POST['record_sale'])) {
                 $error = "Failed to record sale.";
             }
         }
+    } elseif ($quantity <= 0) {
+        $error = "Quantity must be greater than zero.";
     }
 }
 ?>
@@ -63,6 +70,7 @@ if (isset($_POST['record_sale'])) {
     </div>
     
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group">
             <label>Sold To (Firm Name)</label>
             <input type="text" name="sold_to" required placeholder="e.g. Brookside, KCC" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">

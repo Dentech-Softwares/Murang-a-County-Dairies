@@ -50,6 +50,11 @@ if (isset($_GET['delete'])) {
 }
 
 if (isset($_POST['add_farmer'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $name = $_POST['full_name'];
     $phone = $_POST['phone'];
     
@@ -121,6 +126,7 @@ $farmers = $stmt->fetchAll();
 <div class="content-card" style="text-align: left; max-width: 500px; margin-bottom: 2rem;">
     <h3>Add New Farmer</h3>
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group">
             <label>Full Name</label>
             <input type="text" name="full_name" required>

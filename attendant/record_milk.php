@@ -11,12 +11,22 @@ $stmt->execute();
 $buying_price = $stmt->fetchColumn();
 
 if (isset($_POST['record_milk'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $farmer_id = $_POST['farmer_id'];
     $quantity = $_POST['quantity'];
     $total_price = $quantity * $buying_price;
     $attendant_id = $_SESSION['attendant_id'];
 
-    if (!empty($farmer_id) && !empty($quantity)) {
+    // Strict Validation: Prevent zero or negative quantities
+    if ($quantity <= 0) {
+        $error = "Quantity must be greater than zero.";
+    }
+
+    if (!empty($farmer_id) && !empty($quantity) && !isset($error)) {
         $stmt = $pdo->prepare("INSERT INTO milk_collection (dairy_id, farmer_id, attendant_id, quantity, price_per_litre, total_price) 
                               VALUES (?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$dairy_id, $farmer_id, $attendant_id, $quantity, $buying_price, $total_price])) {
@@ -83,6 +93,7 @@ $farmers = $stmt->fetchAll();
     </div>
     
     <form action="" method="POST" id="milk-form">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group" style="position: relative;">
             <label>Farmer Name or No.</label>
             <div class="custom-select-wrapper">
