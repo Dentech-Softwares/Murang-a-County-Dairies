@@ -30,6 +30,8 @@ function sendDairyAlert($phone, $message) {
     $url = "https://account.opensms.co.ke/api/v3/sms/send";
     
     // Your exact API token loaded from your dashboard
+    // 368|XP15TR7U8BikrSDkFPFkPWabYid1YjJZ7IZN9jHhf3df7eb6 (0101965519)
+    // 364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36 (0720601394)
     $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; 
 
     $payload = array(
@@ -43,15 +45,19 @@ function sendDairyAlert($phone, $message) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For local XAMPP environments
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // Essential for some XAMPP setups
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // Faster fail if network is slow
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);       // Don't wait more than 5 seconds for SMS
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1); // 1s is enough for high-speed API endpoints
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);       // Max 3s total execution
+    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); // Blazing fast DNS bypass
+    curl_setopt($ch, CURLOPT_TCP_NODELAY, 1); // Instant packet delivery
+    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); // Use multiplexing if supported
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         "Authorization: Bearer " . $apiToken,
         "Content-Type: application/json",
         "Accept: application/json",
-        "X-Requested-With: XMLHttpRequest"
+        "Expect:", // Disable the "100-continue" delay
+        "Connection: keep-alive"
     ));
 
     $response = curl_exec($ch);

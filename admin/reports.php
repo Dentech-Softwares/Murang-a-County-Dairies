@@ -41,6 +41,28 @@ if (isset($_GET['export'])) {
             fputcsv($output, [$r['name'], number_format($r['c_qty'], 2), number_format($r['c_amt'], 2), $r['buyers'] ?: 'N/A', number_format($r['s_qty'], 2), number_format($r['s_amt'], 2)]);
         }
 
+        fputcsv($output, []);
+        fputcsv($output, ['DETAILED SALES BY DAIRY & BUYER']);
+        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+                              FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
+                              WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
+        $stmt->execute([$date]);
+        while($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+        }
+
+    } elseif ($type == 'daily_detailed_sales') {
+        fputcsv($output, ['Daily Sales Detailed Summary - ' . $date]);
+        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+                              FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
+                              WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
+        $stmt->execute([$date]);
+        while($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+        }
+
     } elseif ($type == 'daily_collections') {
         fputcsv($output, ['Daily Collection Report - ' . $date]);
         fputcsv($output, ['Dairy', 'Quantity (L)', 'Amount (Kes)']);
@@ -255,6 +277,63 @@ $daily_profit = $daily_revenue - $daily_cost;
                                                 <?php echo number_format($c['available_milk'], 2); ?>
                                             </span>
                                         </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="margin-top: 2rem;">
+    <div class="col">
+        <div class="content-card" style="padding: 0; overflow: hidden;">
+            <div onclick="toggleTable('daily-detailed-sales-collapsible', 'dds-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i id="dds-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Daily Sales Detailed Summary</h3>
+                </div>
+                <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
+                    <a href="?export=daily_detailed_sales&date=<?php echo urlencode($date_filter); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none;">
+                        <i class="fas fa-file-excel"></i> CSV
+                    </a>
+                    <a href="?export=daily_detailed_sales&date=<?php echo urlencode($date_filter); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f;">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                </div>
+            </div>
+            <div id="daily-detailed-sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
+                <div class="table-container">
+                    <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Dairy Name</th>
+                                <th>Buyer</th>
+                                <th>Quantity (L)</th>
+                                <th>Total Amount (Kes)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $stmt = $pdo->prepare("SELECT d.name as dairy_name, ms.sold_to, SUM(ms.quantity) as total_quantity, SUM(ms.total_price) as total_amount 
+                                                  FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
+                                                  WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
+                            $stmt->execute([$date_filter]);
+                            $dds = $stmt->fetchAll();
+                            if (empty($dds)): ?>
+                                <tr><td colspan="5" style="text-align: center;">No detailed sales records for this day.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($dds as $index => $row): ?>
+                                    <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
+                                        <td><?php echo $index + 1; ?></td>
+                                        <td><strong><?php echo htmlspecialchars($row['dairy_name']); ?></strong></td>
+                                        <td><?php echo htmlspecialchars($row['sold_to']); ?></td>
+                                        <td><?php echo number_format($row['total_quantity'], 2); ?></td>
+                                        <td><strong><?php echo number_format($row['total_amount'], 2); ?></strong></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>

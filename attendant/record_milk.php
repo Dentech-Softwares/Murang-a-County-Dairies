@@ -23,18 +23,19 @@ if (isset($_POST['record_milk'])) {
             // Task B: Integrated SMS Notification Feature
             require_once '../SmsGateway.php';
 
-            // 1. Fetch Farmer Details (Name, Number, Phone)
-            $f_stmt = $pdo->prepare("SELECT full_name, farmer_number, phone FROM farmers WHERE id = ?");
-            $f_stmt->execute([$farmer_id]);
-            $farmer_data = $f_stmt->fetch();
-
-            // 2. Calculate Monthly Running Total (Including today's delivery)
-            $m_stmt = $pdo->prepare("SELECT SUM(quantity) FROM milk_collection WHERE farmer_id = ? AND MONTH(date_collected) = MONTH(CURRENT_DATE()) AND YEAR(date_collected) = YEAR(CURRENT_DATE())");
-            $m_stmt->execute([$farmer_id]);
-            $monthly_total = $m_stmt->fetchColumn() ?: 0;
+            // Consolidated Query: Fetch Farmer and running total in one trip to the DB
+            $data_stmt = $pdo->prepare("SELECT f.full_name, f.farmer_number, f.phone, 
+                                       (SELECT SUM(quantity) FROM milk_collection 
+                                        WHERE farmer_id = f.id 
+                                        AND date_collected >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')) as monthly_total 
+                                       FROM farmers f WHERE f.id = ?");
+            $data_stmt->execute([$farmer_id]);
+            $farmer_data = $data_stmt->fetch();
+            $monthly_total = $farmer_data['monthly_total'] ?: 0;
 
             // 3. Prepare and Send SMS Alert
             $sms_message = "Dear " . $farmer_data['full_name'] . ", F/NO:" . $farmer_data['farmer_number'] . "\n" .
+                           "Date: " . date('d-M-Y') . "\n" .
                            "Your milk collection today is " . number_format($quantity, 1) . "Ltrs.\n" .
                            "Your collection this month is " . number_format($monthly_total, 1) . "Ltrs.\n" .
                            "Thank you.";
@@ -116,38 +117,38 @@ $farmers = $stmt->fetchAll();
 }
 .custom-dropdown-list {
     position: fixed;
-    top: 70px; /* Moved higher to start right below the header area */
-    right: 295px; /* Pinned to the right side of the screen */
+    top: 50%; /* Position at vertical middle of the screen */
+    right: 250px; /* Pinned to the right side of the screen */
     left: auto;
-    transform: none;
-    width: 150px; /* Reduced width */
+    transform: translateY(-50%); /* Centering adjustment */
+    width: 200px; /* Width for desktop side-strip */
     background: #ffffff !important;
-    height: auto;
-    max-height: calc(100vh - 90px); /* Increased height to span more of the screen */
+    height: auto; /* Shrinks automatically */
+    max-height: calc(100vh - 110px); /* Ends just before the footer area */
     overflow-y: auto;
     z-index: 9999;
     display: none;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border-left: 4px solid #2ecc71;
+    border: 1px solid #ddd;
+    border-left: 5px solid #2ecc71;
     border-radius: 12px;
     padding: 10px 0;
 }
 
 @media (max-width: 768px) {
     .custom-dropdown-list {
-        position: absolute;
-        top: 100%;
-        left: 0;
+        position: fixed;
+        top: 50%;
         right: 0;
-        transform: none;
-        width: 100%;
+        left: auto;
+        bottom: auto; /* Allows list to shrink to content */
+        transform: translateY(-50%);
+        width: 170px; /* Thin strip on mobile */
         height: auto;
-        max-height: 100px;
-        margin-top: 5px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        border-left: 4px solid #2ecc71;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        max-height: calc(100vh - 135px);
+        border-radius: 12px 0 0 12px;
+        border: 2px solid #2ecc71;
+        border-right: none;
     }
 }
 .dropdown-item {

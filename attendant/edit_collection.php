@@ -43,7 +43,8 @@ if (isset($_POST['update_collection'])) {
             $new_monthly_total = $m_stmt->fetchColumn() ?: 0;
 
             $sms_message = "CORRECTION Dear " . $collection['farmer_name'] . ", F/NO:" . $collection['farmer_number'] . "\n" .
-                           "Milk record for " . date('d-M', strtotime($collection['date_collected'])) . " updated from " . $old_quantity . "L to " . number_format($quantity, 1) . "L.\n" .
+                           "Date: " . date('d-M-Y', strtotime($collection['date_collected'])) . "\n" .
+                           "Milk record updated from " . $old_quantity . "L to " . number_format($quantity, 1) . "L.\n" .
                            "New Month Total: " . number_format($new_monthly_total, 1) . "Ltrs.\n" .
                            "Thank you.";
 

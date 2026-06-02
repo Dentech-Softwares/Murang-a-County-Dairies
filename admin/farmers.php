@@ -19,12 +19,16 @@ $farmers = $stmt->fetchAll();
             <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Farmers List</h3>
         </div>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+            <input type="text" id="adminFarmerSearch" placeholder="Search farmers by any attribute..." 
+                   style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; max-width: 300px; font-size: 0.9rem;">
+        </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="farmers-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="adminFarmerTable" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -55,5 +59,28 @@ $farmers = $stmt->fetchAll();
         </div>
     </div>
 </div>
+
+<script>
+function toggleTable(containerId, iconId) {
+    const container = document.getElementById(containerId);
+    const icon = document.getElementById(iconId);
+    if (container && icon) {
+        container.classList.toggle('expanded');
+        icon.style.transform = container.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+}
+
+document.getElementById('adminFarmerSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#adminFarmerTable tbody tr');
+    
+    rows.forEach(row => {
+        if (row.cells.length > 1) { // Skip "No records" row
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    });
+});
+</script>
 
 <?php require_once '../includes/admin_footer.php'; ?>

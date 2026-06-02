@@ -24,6 +24,16 @@ if (isset($pdo) && isset($_SESSION['attendant_id']) && isset($_SESSION['current_
 $stmt = $pdo->prepare("SELECT name FROM dairies WHERE id = ?");
 $stmt->execute([$_SESSION['dairy_id']]);
 $dairy_name = $stmt->fetchColumn();
+
+// Helper to get initials
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $w) {
+        $initials .= strtoupper(substr($w, 0, 1));
+    }
+    return substr($initials, 0, 2);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -269,6 +279,29 @@ $dairy_name = $stmt->fetchColumn();
         .dropdown-link:hover {
             color: #d63031;
         }
+
+        /* Initials Icon Style */
+        .initials-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+            border: 2px solid white;
+        }
+        @media (max-width: 768px) {
+            .initials-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
     <script>
         function toggleSidebar() {
@@ -377,7 +410,7 @@ $dairy_name = $stmt->fetchColumn();
         }
     </script>
 </head>
-<body>
+<body class="<?php echo basename($_SERVER['PHP_SELF'], '.php'); ?>-page">
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     
     <div class="mobile-header" style="display: none;">
@@ -386,8 +419,8 @@ $dairy_name = $stmt->fetchColumn();
         </button>
         <div class="mobile-title"><?php echo htmlspecialchars($dairy_name); ?></div>
         <div class="profile-dropdown">
-            <div class="mobile-user" onclick="toggleDropdown(event)">
-                <i class="fas fa-user-circle"></i>
+            <div class="mobile-user profile-trigger-btn">
+                <div class="initials-icon"><?php echo getInitials($_SESSION['attendant_name']); ?></div>
             </div>
             <div class="dropdown-content" id="mobileProfileDropdown">
                 <div class="dropdown-info">
@@ -460,8 +493,8 @@ $dairy_name = $stmt->fetchColumn();
                 </div>
                 <div class="user-info">
                 <div class="profile-dropdown">
-                    <div class="profile-trigger" onclick="toggleDropdown(event)">
-                        <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
+                    <div class="profile-trigger profile-trigger-btn">
+                        <div class="initials-icon" style="margin-right: 10px;"><?php echo getInitials($_SESSION['attendant_name']); ?></div>
                         <div style="text-align: left;">
                             <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['attendant_name']; ?></div>
                             <span class="badge badge-attendant" style="font-size: 0.7rem;">Attendant</span>
@@ -490,22 +523,38 @@ $dairy_name = $stmt->fetchColumn();
             </div>
 
             <script>
-                function toggleDropdown(event) {
-                    if (event) event.stopPropagation();
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Profile Dropdown Toggle
+                    const triggers = document.querySelectorAll('.profile-trigger-btn');
                     const mobileDropdown = document.getElementById("mobileProfileDropdown");
                     const desktopDropdown = document.getElementById("profileDropdown");
-                    
-                    if (window.innerWidth <= 768 && mobileDropdown) {
-                        mobileDropdown.classList.toggle("show");
-                        if (desktopDropdown) desktopDropdown.classList.remove("show");
-                    } else if (desktopDropdown) {
-                        desktopDropdown.classList.toggle("show");
-                        if (mobileDropdown) mobileDropdown.classList.remove("show");
-                    }
-                }
 
-                // Close sidebar when clicking menu items on mobile
-                document.addEventListener('DOMContentLoaded', function() {
+                    triggers.forEach(trigger => {
+                        trigger.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            if (window.innerWidth <= 768) {
+                                if (mobileDropdown) {
+                                    const isShown = mobileDropdown.classList.contains('show');
+                                    // Close all first
+                                    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                                    // Toggle current
+                                    if (!isShown) mobileDropdown.classList.add("show");
+                                }
+                            } else {
+                                if (desktopDropdown) {
+                                    const isShown = desktopDropdown.classList.contains('show');
+                                    // Close all first
+                                    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                                    // Toggle current
+                                    if (!isShown) desktopDropdown.classList.add("show");
+                                }
+                            }
+                        });
+                    });
+
+                    // Close sidebar when clicking menu items on mobile
                     const menuItems = document.querySelectorAll('.sidebar-menu a');
                     menuItems.forEach(item => {
                         item.addEventListener('click', () => {
@@ -514,17 +563,17 @@ $dairy_name = $stmt->fetchColumn();
                             }
                         });
                     });
+
+                    // Close dropdowns when clicking or touching any other part of the screen
+                    const handleOutsideInteraction = (event) => {
+                        if (!event.target.closest('.profile-dropdown')) {
+                            document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                        }
+                    };
+
+                    document.addEventListener('click', handleOutsideInteraction);
+                    document.addEventListener('touchstart', handleOutsideInteraction, {passive: true});
                 });
-
-                // Close dropdowns when clicking or touching any other part of the screen
-                const handleOutsideInteraction = (event) => {
-                    if (!event.target.closest('.profile-dropdown')) {
-                        document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
-                    }
-                };
-
-                window.addEventListener('click', handleOutsideInteraction);
-                window.addEventListener('touchstart', handleOutsideInteraction);
 
                 function updateTime() {
                     const timeSpan = document.getElementById('current-time');

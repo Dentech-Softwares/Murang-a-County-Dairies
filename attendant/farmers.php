@@ -135,20 +135,23 @@ $farmers = $stmt->fetchAll();
 
 <div class="content-card" style="padding: 0; overflow: hidden;">
     <!-- Header/Dropdown Toggle -->
-    <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee;">
+    <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
-        <a href="?export=1" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-            <i class="fas fa-download"></i> CSV
-        </a>
+        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
+            <input type="text" id="attendantFarmerSearch" placeholder="Filter farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
+            <a href="?export=1" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <i class="fas fa-download"></i> CSV
+            </a>
+        </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="farmers-collapsible" class="collapsed" style="overflow: visible; display: block;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="attendantFarmerTable" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -186,6 +189,18 @@ $farmers = $stmt->fetchAll();
 </div>
 
 <script>
+document.getElementById('attendantFarmerSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#attendantFarmerTable tbody tr');
+    
+    rows.forEach(row => {
+        if (row.cells.length > 1) { // Skip placeholder row
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    });
+});
+
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);

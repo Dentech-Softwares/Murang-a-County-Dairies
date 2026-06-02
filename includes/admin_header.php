@@ -26,6 +26,16 @@ if (empty($_SESSION['csrf_token'])) {
 
 // Security: Helper for XSS protection
 function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
+
+// Helper to get initials
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $w) {
+        $initials .= strtoupper(substr($w, 0, 1));
+    }
+    return substr($initials, 0, 2);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -305,6 +315,29 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
         .dropdown-link:hover {
             color: #d63031;
         }
+
+        /* Initials Icon Style */
+        .initials-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+            border: 2px solid white;
+        }
+        @media (max-width: 768px) {
+            .initials-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+        }
         .sidebar-time {
             margin-top: 2rem;
             padding: 1rem;
@@ -346,15 +379,30 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
         }
     </script>
 </head>
-<body>
+<body class="<?php echo basename($_SERVER['PHP_SELF'], '.php'); ?>-page">
     <!-- Mobile Header -->
     <div class="mobile-header">
         <button class="hamburger-btn" id="sidebarToggle" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
         <div class="mobile-title">Murang'a Dairy</div>
-        <div class="mobile-user">
-            <a href="../includes/logout.php" style="color: #666;"><i class="fas fa-sign-out-alt"></i></a>
+        <div class="profile-dropdown">
+            <div class="mobile-user profile-trigger-btn">
+                <div class="initials-icon"><?php echo getInitials($_SESSION['admin_name']); ?></div>
+            </div>
+            <div id="mobileProfileDropdown" class="dropdown-content">
+                <div class="dropdown-info">
+                    <p>Full Name</p>
+                    <strong><?php echo $_SESSION['admin_name']; ?></strong>
+                </div>
+                <div class="dropdown-info">
+                    <p>Role</p>
+                    <strong><?php echo ucfirst(str_replace('_', ' ', $_SESSION['admin_role'])); ?></strong>
+                </div>
+                <a href="../includes/logout.php" class="dropdown-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
     </div>
 
@@ -426,8 +474,8 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
                 </div>
                 <div class="user-info">
                     <div class="profile-dropdown">
-                        <div class="profile-trigger" onclick="toggleDropdown(event)">
-                            <i class="fas fa-user-circle fa-2x" style="color: var(--primary-color);"></i>
+                        <div class="profile-trigger profile-trigger-btn">
+                            <div class="initials-icon" style="margin-right: 10px;"><?php echo getInitials($_SESSION['admin_name']); ?></div>
                             <div style="text-align: left;">
                                 <div style="font-weight: 700; font-size: 0.95rem;"><?php echo $_SESSION['admin_name']; ?></div>
                                 <span class="badge <?php echo $_SESSION['admin_role'] == 'super_admin' ? 'badge-super' : 'badge-admin'; ?>" style="font-size: 0.7rem;">
@@ -457,13 +505,38 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
                 </div>
             </div>
             <script>
-                function toggleDropdown(event) {
-                    event.stopPropagation();
-                    document.getElementById("profileDropdown").classList.toggle("show");
-                }
-
-                // Close sidebar when clicking menu items on mobile
                 document.addEventListener('DOMContentLoaded', function() {
+                    // Profile Dropdown Toggle
+                    const triggers = document.querySelectorAll('.profile-trigger-btn');
+                    const mobileDropdown = document.getElementById("mobileProfileDropdown");
+                    const desktopDropdown = document.getElementById("profileDropdown");
+
+                    triggers.forEach(trigger => {
+                        trigger.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            if (window.innerWidth <= 768) {
+                                if (mobileDropdown) {
+                                    const isShown = mobileDropdown.classList.contains('show');
+                                    // Close all first
+                                    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                                    // Toggle current
+                                    if (!isShown) mobileDropdown.classList.add("show");
+                                }
+                            } else {
+                                if (desktopDropdown) {
+                                    const isShown = desktopDropdown.classList.contains('show');
+                                    // Close all first
+                                    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                                    // Toggle current
+                                    if (!isShown) desktopDropdown.classList.add("show");
+                                }
+                            }
+                        });
+                    });
+
+                    // Close sidebar when clicking menu items on mobile
                     const menuItems = document.querySelectorAll('.sidebar-menu a');
                     menuItems.forEach(item => {
                         item.addEventListener('click', () => {
@@ -472,6 +545,16 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
                             }
                         });
                     });
+
+                    // Close dropdowns when clicking or touching any other part of the screen
+                    const handleOutsideInteraction = (event) => {
+                        if (!event.target.closest('.profile-dropdown')) {
+                            document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                        }
+                    };
+
+                    document.addEventListener('click', handleOutsideInteraction);
+                    document.addEventListener('touchstart', handleOutsideInteraction, {passive: true});
                 });
 
                 function toggleTable(containerId, iconId) {
@@ -484,19 +567,6 @@ function h($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
                         icon.style.transform = "rotate(90deg)";
                     } else {
                         icon.style.transform = "rotate(0deg)";
-                    }
-                }
-
-                // Close the dropdown if the user clicks outside of it
-                window.onclick = function(event) {
-                    if (!event.target.closest('.profile-dropdown')) {
-                        const dropdowns = document.getElementsByClassName("dropdown-content");
-                        for (let i = 0; i < dropdowns.length; i++) {
-                            const openDropdown = dropdowns[i];
-                            if (openDropdown.classList.contains('show')) {
-                                openDropdown.classList.remove('show');
-                            }
-                        }
                     }
                 }
 
