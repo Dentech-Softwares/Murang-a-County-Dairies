@@ -90,9 +90,9 @@
         display: flex !important;
         justify-content: space-between;
         align-items: center;
-        padding: 0 15px;
-        height: 60px;
-        background: var(--glass-bg) !important;
+        padding: 0 20px;
+        height: 58px;
+        background: #ffffff !important;
         backdrop-filter: blur(10px);
         color: var(--primary-color);
         position: fixed;
@@ -100,8 +100,15 @@
         left: 0;
         right: 0;
         z-index: 1500;
-        box-shadow: 0 1px 10px rgba(0,0,0,0.05);
-        border-bottom: 1px solid #e0eee0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .mobile-header img {
+        height: 34px !important;
+        width: auto;
+        object-fit: contain;
+        transition: transform 0.2s;
     }
 
     /* Mobile Bottom Navigation */
@@ -156,8 +163,8 @@
     }
 
     .mobile-title {
-        font-weight: 800;
-        font-size: 0.95rem;
+        font-weight: 600;
+        font-size: 0.75rem;
         color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -363,19 +370,31 @@
 
     /* 6. BUTTONS (TOUCH-FRIENDLY) */
     .btn, button, input[type="submit"] {
-        padding: 12px !important;
+        padding: 12px 20px !important;
         font-size: 0.9rem !important;
-        border-radius: 12px !important;
+        font-weight: 600 !important;
+        text-transform: none !important;
+        letter-spacing: 0.3px !important;
+        width: 100%; /* Removed !important to allow row-based overrides */
+        border-radius: 10px !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
         border: none !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .btn:active, button:active {
-        transform: scale(0.98) !important;
+        transform: scale(0.96) !important; /* More tactile feedback */
     }
 
     .btn-primary {
-        background: var(--primary-color) !important;
+        background: #1b5e20 !important; /* Flat premium color */
+        color: white !important;
+        border: none !important;
+    }
+
+    .btn-secondary {
+        background: var(--secondary-color) !important;
+        box-shadow: 0 6px 15px rgba(46, 125, 50, 0.15) !important;
         color: white !important;
     }
 
@@ -386,9 +405,9 @@
 
     /* 7. VISUAL IMPROVEMENTS */
     .card, .form-container, .login-container {
-        padding: 25px !important;
-        border-radius: 20px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+        padding: 20px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.04) !important;
         border: 1px solid #f8f9fa !important;
     }
 
@@ -422,22 +441,23 @@
 
     /* Record Milk Custom Dropdown Fix */
     .custom-dropdown-list {
-        position: fixed !important;
-        top: 75px !important; /* Positioned higher, safely below mobile header (60px) */
-        right: 0 !important;
+        position: absolute !important;
+        top: -100px !important; /* Runs from a bit high relative to input */
+        right: -15px !important; /* Anchors it tightly to the right side of the form */
         left: auto !important;
+        bottom: auto !important;
         transform: none !important;
-        width: 160px !important; /* Thin strip width */
+        width: 170px !important; /* Thin strip width on the right */
         height: auto !important; /* Allows shrinking/expanding based on search */
-        max-height: 38vh !important; /* Strictly constrained to the top half to clear the keyboard */
+        max-height: 400px !important; /* Sufficient to show at least 6 farmers */
         margin: 0 !important;
-        border-radius: 12px 0 0 12px !important; /* Premium rounded edge on the inner side */
+        border-radius: 12px 0 0 12px !important; /* Premium rounded edge on the inner side only */
         border: 2px solid #2ecc71 !important;
-        border-right: none !important;
-        z-index: 2500 !important; /* Above main content but below overlays if any */
+        border-right: none !important; /* Merge with screen edge */
+        z-index: 9999 !important;
         background: white !important;
         box-shadow: -4px 4px 15px rgba(0,0,0,0.1) !important;
-        padding: 5px 0 !important;
+        padding: 8px 0 !important;
     }
 
     .extra-row {
@@ -445,6 +465,38 @@
     }
     .expanded .extra-row {
         display: table-row !important;
+    }
+
+    /* 8. HOME PAGE TILES (SIDE-BY-SIDE REDESIGN) */
+    .tiles-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 2rem !important;
+        padding: 0 !important;
+    }
+
+    .tile-card {
+        padding: 1.5rem 10px !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+
+    .tile-icon {
+        font-size: 2.2rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    .tile-content h2 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .tile-content p, .tile-footer {
+        display: none !important; /* Simplifies the UI for the compact row layout */
     }
 }
 

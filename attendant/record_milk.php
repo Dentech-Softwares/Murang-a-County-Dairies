@@ -115,14 +115,15 @@ $farmers = $stmt->fetchAll();
     width: 100%;
 }
 .custom-dropdown-list {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: calc(100% + 15px);
-    width: 210px;
+    position: fixed;
+    top: 70px; /* Moved higher to start right below the header area */
+    right: 295px; /* Pinned to the right side of the screen */
+    left: auto;
+    transform: none;
+    width: 150px; /* Reduced width */
     background: #ffffff !important;
     height: auto;
-    max-height: 750px;
+    max-height: calc(100vh - 90px); /* Increased height to span more of the screen */
     overflow-y: auto;
     z-index: 9999;
     display: none;
@@ -141,7 +142,7 @@ $farmers = $stmt->fetchAll();
         transform: none;
         width: 100%;
         height: auto;
-        max-height: 200px;
+        max-height: 100px;
         margin-top: 5px;
         border-radius: 8px;
         border: 1px solid #ddd;
