@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/db_connect.php';
+require_once '../includes/ReportService.php';
 
 // Handle CSV Export
 if (isset($_GET['export'])) {
@@ -113,12 +114,27 @@ if (isset($_GET['export'])) {
                 number_format($row['amt'], 2)
             ]);
         }
+    } elseif ($type == 'monthly_summary') {
+        fputcsv($output, ['Monthly Activity Summary - ' . date('F Y', strtotime($date))]);
+        fputcsv($output, ['Date', 'Collections', 'Collected (L)', 'Sold (L)', 'Revenue (Kes)']);
+        
+        $summary = $service->getMonthlyDairyCollectionSummary($date, $dairy_id);
+        foreach ($summary as $row) {
+            fputcsv($output, [
+                date('d-M-Y', strtotime($row['activity_date'])),
+                $row['coll_count'],
+                number_format($row['coll_qty'], 2),
+                number_format($row['sale_qty'], 2),
+                number_format($row['sale_amt'], 2)
+            ]);
+        }
     }
     fclose($output);
     exit();
 }
 
 require_once '../includes/attendant_header.php';
+$service = new ReportService($pdo);
 ?>
 
 <script>
@@ -132,8 +148,11 @@ require_once '../includes/attendant_header.php';
             const html = await response.text();
             const doc = new DOMParser().parseFromString(html, 'text/html');
             
+            if (document.querySelector('.stats-grid')) document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
+            if (document.querySelector('#monthly-summary-collapsible')) document.querySelector('#monthly-summary-collapsible .table-container').innerHTML = doc.querySelector('#monthly-summary-collapsible .table-container').innerHTML;
             document.querySelector('#coll-collapsible .table-container').innerHTML = doc.querySelector('#coll-collapsible .table-container').innerHTML;
             document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
+            document.querySelector('#buyer-summary-collapsible .table-container').innerHTML = doc.querySelector('#buyer-summary-collapsible .table-container').innerHTML;
         } catch (e) { console.error("Records sync failed", e); }
     }
     setInterval(silentRefreshRecords, 1000);
@@ -143,11 +162,15 @@ require_once '../includes/attendant_header.php';
 
 // Force local timezone to match database for "Today" queries
 date_default_timezone_set('Africa/Nairobi');
-
 $dairy_id = $_SESSION['dairy_id'];
 
 // Get filters
-$date_filter = $_GET['date'] ?? date('Y-m-d');
+$date_filter = date('Y-m-d');
+if (isset($_GET['date']) && !empty($_GET['date'])) {
+    $date_filter = $_GET['date'];
+} elseif (!empty($_GET['month_filter'])) {
+    $date_filter = $_GET['month_filter'] . '-01';
+}
 $farmer_filter = $_GET['farmer_id'] ?? '';
 
 // Get all farmers for filter dropdown
@@ -194,6 +217,23 @@ $stmt = $pdo->prepare($sales_query);
 $stmt->execute($sales_params);
 $sales = $stmt->fetchAll();
 
+// Fetch aggregate monthly stats for this specific dairy
+$m_stats = $service->getMonthlyDairyStats($date_filter, $dairy_id);
+$monthly_summary = $service->getMonthlyDairyCollectionSummary($date_filter, $dairy_id);
+
+// Calculate specific dairy daily volume from current filtered list
+$day_vol = 0;
+$day_cost = 0;
+foreach($collections as $c) {
+    $day_vol += $c['quantity'];
+    $day_cost += $c['total_price'];
+}
+$day_rev = 0;
+foreach($sales as $s) {
+    $day_rev += $s['total_price'];
+}
+$day_profit = $day_rev - $day_cost;
+
 // Handle Deletion
 if (isset($_GET['delete_type']) && isset($_GET['delete_id'])) {
     $type = $_GET['delete_type'];
@@ -219,6 +259,55 @@ $success = $_GET['success'] ?? null;
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?php echo $success; ?></div>
 <?php endif; ?>
 
+<!-- Filter Section -->
+<div class="content-card" style="margin-bottom: 2rem; text-align: left; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow);">
+    <form action="" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin: 0; flex: 1 1 150px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555; font-size: 0.85rem;">Specific Date</label>
+            <input type="date" name="date" value="<?php echo date('Y-m-d', strtotime($date_filter)); ?>" onchange="this.form.month_filter.value=''; this.form.submit()" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; cursor: pointer; font-size: 0.85rem;">
+        </div>
+        <div class="form-group" style="margin: 0; flex: 1 1 150px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555; font-size: 0.85rem;">Select Month</label>
+            <input type="month" name="month_filter" value="<?php echo date('Y-m', strtotime($date_filter)); ?>" onchange="this.form.date.value=''; this.form.submit()" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; cursor: pointer; font-size: 0.85rem;">
+        </div>
+        <div class="form-group" style="margin: 0; flex: 1 1 200px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555; font-size: 0.85rem;">Filter by Farmer</label>
+            <select name="farmer_id" onchange="this.form.submit()" style="padding: 0.6rem; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.85rem;">
+                <option value="">All Farmers</option>
+                <?php foreach ($all_farmers as $f): ?>
+                    <option value="<?php echo $f['id']; ?>" <?php echo $farmer_filter == $f['id'] ? 'selected' : ''; ?>>
+                        [<?php echo $f['farmer_number']; ?>] <?php echo htmlspecialchars($f['full_name']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <a href="milk_records.php" class="btn btn-primary" style="width: auto; padding: 0.6rem 1rem; font-size: 0.85rem; background: #95a5a6; text-decoration: none; border-radius: 8px; color: white;">Clear All</a>
+    </form>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="stat-card">
+        <i class="fas fa-calendar-alt" style="color: #673ab7; background: #ede7f6;"></i>
+        <h3>Month Volume (<?php echo date('F Y', strtotime($date_filter)); ?>)</h3>
+        <div class="value"><?php echo number_format($m_stats['volume'], 1); ?> L</div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-coins" style="color: #ffa000; background: #fff8e1;"></i>
+        <h3>Monthly Profit</h3>
+        <div class="value" style="color: #ffa000;">Kes <?php echo number_format($m_stats['profit'], 0); ?></div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-hand-holding-water"></i>
+        <h3>Selected Day Vol (<?php echo date('M d', strtotime($date_filter)); ?>)</h3>
+        <div class="value"><?php echo number_format($day_vol, 1); ?> L</div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-calendar-day"></i>
+        <h3>Selected Day Profit</h3>
+        <div class="value" style="color: <?php echo $day_profit >= 0 ? 'var(--primary-color)' : '#d32f2f'; ?>;">Kes <?php echo number_format($day_profit, 0); ?></div>
+    </div>
+</div>
+
 <div class="row" style="margin-bottom: 2rem;">
     <div class="content-card" style="padding: 0; overflow: hidden;">
         <div onclick="toggleTable('buyer-summary-collapsible', 'bs-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
@@ -227,10 +316,10 @@ $success = $_GET['success'] ?? null;
                 <h3 style="margin: 0; font-size: 1.1rem;">Sales Summary by Buyer</h3>
             </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
-                <a href="?export=sales_summary&date=<?php echo $date_filter; ?>" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <a href="?export=sales_summary&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="?export=sales_summary&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none; background: #d32f2f;">
+                <a href="?export=sales_summary&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -281,10 +370,10 @@ $success = $_GET['success'] ?? null;
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Collections History</h3>
             </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
-                <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>&format=pdf" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none; background: #d32f2f;">
+                <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -334,7 +423,7 @@ $success = $_GET['success'] ?? null;
 </div>
 </div>
 
-<div class="row">
+<div class="row" style="margin-bottom: 2rem;">
     <div class="content-card" style="padding: 0; overflow: hidden;">
         <div onclick="toggleTable('sales-collapsible', 'sales-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -342,10 +431,10 @@ $success = $_GET['success'] ?? null;
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Sales History</h3>
             </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
-                <a href="?export=sales&date=<?php echo $date_filter; ?>" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <a href="?export=sales&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="?export=sales&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none; background: #d32f2f;">
+                <a href="?export=sales&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -393,6 +482,43 @@ $success = $_GET['success'] ?? null;
             </div>
     </div>
 </div>
+</div>
+
+<div class="row" style="margin-bottom: 2rem;">
+    <div class="content-card" style="padding: 0; overflow: hidden;">
+        <div onclick="toggleTable('monthly-summary-collapsible', 'ms-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i id="ms-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                <h3 style="margin: 0; font-size: 1.1rem;">Monthly Activity Summary (<?php echo date('F Y', strtotime($date_filter)); ?>)</h3>
+            </div>
+            <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
+                <a href="?export=monthly_summary&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="?export=monthly_summary&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+        <div id="monthly-summary-collapsible" class="collapsed" style="overflow: visible; display: block;">
+            <div class="table-container">
+                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                    <thead>
+                        <tr><th>Date</th><th>Collections</th><th>Collected (L)</th><th>Sold (L)</th><th>Revenue (Kes)</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($monthly_summary)): ?>
+                            <tr><td colspan="5" style="text-align: center;">No activity found for the selected month.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($monthly_summary as $ms): ?>
+                                <tr><td><?php echo date('d-M-Y', strtotime($ms['activity_date'])); ?></td><td><?php echo $ms['coll_count']; ?> entries</td><td><?php echo number_format($ms['coll_qty'], 1); ?> L</td><td><?php echo number_format($ms['sale_qty'], 1); ?> L</td><td><strong>Kes <?php echo number_format($ms['sale_amt'], 2); ?></strong></td></tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

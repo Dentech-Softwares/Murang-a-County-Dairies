@@ -20,7 +20,7 @@ $dairy_payments = $stmt->fetchAll();
 ?>
 
 <h2>Payments & Financials</h2>
-
+here
 <div class="row">
     <div class="col" style="flex: 1; width: 100%;">
 <div class="content-card">
@@ -29,14 +29,15 @@ $dairy_payments = $stmt->fetchAll();
                     <i id="dr-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                     <h3 style="margin: 0;">Dairy Sales Revenue</h3>
                 </div>
-                <div class="table-actions-wrapper" onclick="event.stopPropagation()">
-                    <div class="search-input-container">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="revenueSearch" placeholder="Search revenue...">
-                    </div>
-                    <div class="export-buttons">
-                        <a href="?export=1&format=csv" class="btn-export csv" title="Export CSV"><i class="fas fa-file-csv"></i></a>
-                        <a href="?export=1&format=pdf" class="btn-export pdf" title="Export PDF"><i class="fas fa-file-pdf"></i></a>
+                <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
+                    <input type="text" id="revenueSearch" placeholder="Filter revenue..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                    <div style="display: flex; gap: 5px;">
+                        <a href="?export=1&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                            <i class="fas fa-file-excel"></i> CSV
+                        </a>
+                        <a href="?export=1&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
                     </div>
                 </div>
             </div>

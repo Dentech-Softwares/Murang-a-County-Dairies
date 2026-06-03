@@ -147,9 +147,14 @@ $farmers = $stmt->fetchAll();
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
-            <a href="?export=1" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
-                <i class="fas fa-download"></i> CSV
-            </a>
+            <div style="display: flex; gap: 5px;">
+                <a href="?export=1&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="?export=1&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
         </div>
     </div>
 

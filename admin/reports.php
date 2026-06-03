@@ -24,17 +24,16 @@ if (isset($_GET['export'])) {
     $output = fopen('php://output', 'w');
     
     if ($type == 'daily_summary') {
-        $stats = $service->getMonthlyStats($date); // Reusing logic
-        // Note: For a strictly daily summary stat, we would add a getDailyStats method to service.
-        // For now, using centralized service ensures consistency.
+        $stats = $service->getDailyStats($date); 
 
         fputcsv($output, ['DAILY SUMMARY REPORT - ' . date('l, jS F Y', strtotime($date))]);
         fputcsv($output, []);
         fputcsv($output, ['SUMMARY STATS']);
-        fputcsv($output, ['Total Profit (Selected Month)', number_format($stats['profit'], 2)]);
+        fputcsv($output, ['Total Profit (For this Day)', number_format($stats['profit'], 2)]);
+        fputcsv($output, ['Total Volume Collected', number_format($stats['volume'], 2)]);
         fputcsv($output, []);
 
-        fputcsv($output, ['DAIRY PERFORMANCE SUMMARY']);
+        fputcsv($output, ['DAIRY PERFORMANCE SUMMARY (Available Stock is Cumulative)']);
         fputcsv($output, ['Dairy', 'Collected (L)', 'Cost (Kes)', 'Buyer(s)', 'Sold (L)', 'Revenue (Kes)']);
         $perf = $service->getDailyPerformanceBreakdown($date);
         foreach ($perf as $r) {
@@ -43,24 +42,40 @@ if (isset($_GET['export'])) {
 
         fputcsv($output, []);
         fputcsv($output, ['DETAILED SALES BY DAIRY & BUYER']);
-        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
-        $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+        fputcsv($output, ['Date', 'Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $stmt = $pdo->prepare("SELECT DATE(ms.date_sold) as sale_date, d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
                               FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
                               WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
         $stmt->execute([$date]);
         while($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+            fputcsv($output, [$r['sale_date'], $r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+        }
+
+    } elseif ($type == 'monthly_detailed_sales') {
+        fputcsv($output, ['Monthly Detailed Sales Report - ' . date('F Y', strtotime($date))]);
+        fputcsv($output, ['#', 'Date', 'Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $detailed = $service->getMonthlyDetailedSales($date);
+        $i = 1;
+        foreach ($detailed as $r) {
+            fputcsv($output, [
+                $i++,
+                $r['sale_date'],
+                $r['name'],
+                $r['sold_to'],
+                number_format($r['qty'], 2),
+                number_format($r['amt'], 2)
+            ]);
         }
 
     } elseif ($type == 'daily_detailed_sales') {
         fputcsv($output, ['Daily Sales Detailed Summary - ' . $date]);
-        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
-        $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+        fputcsv($output, ['Date', 'Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $stmt = $pdo->prepare("SELECT DATE(ms.date_sold) as sale_date, d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
                               FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
                               WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
         $stmt->execute([$date]);
         while($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+            fputcsv($output, [$r['sale_date'], $r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
         }
 
     } elseif ($type == 'daily_collections') {
@@ -68,7 +83,7 @@ if (isset($_GET['export'])) {
         fputcsv($output, ['Dairy', 'Quantity (L)', 'Amount (Kes)']);
         $collections = $service->getDailySummary($date);
         foreach ($collections as $r) {
-            fputcsv($output, [$r['name'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+            fputcsv($output, [$r['dairy_name'], number_format($r['total_quantity'], 2), number_format($r['total_amount'], 2)]);
         }
         
     } elseif ($type == 'farmer_collections') {
@@ -114,10 +129,10 @@ if (isset($_GET['export'])) {
 
         fputcsv($output, []);
         fputcsv($output, ['DETAILED SALES BY DAIRY & BUYER']);
-        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        fputcsv($output, ['Date', 'Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
         $detailed = $service->getMonthlyDetailedSales($date);
         foreach ($detailed as $r) {
-            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
+            fputcsv($output, [$r['sale_date'], $r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
         }
     }
     fclose($output);
@@ -132,13 +147,13 @@ date_default_timezone_set('Africa/Nairobi');
 // Initialize date_filter to today's date
 $date_filter = date('Y-m-d');
 
-// Priority logic for filters: A specific date selection overrides the month selection.
-// This ensures that if both are present, the more specific (daily) filter is used.
-if (isset($_GET['month_filter']) && !empty($_GET['month_filter'])) {
-    $date_filter = $_GET['month_filter'] . '-01';
-}
+// Improved Filter Logic: Check which filter was most recently interacted with
 if (isset($_GET['date']) && !empty($_GET['date'])) {
+    // If a specific day is requested, use it and ignore month filter
     $date_filter = $_GET['date'];
+} elseif (isset($_GET['month_filter']) && !empty($_GET['month_filter'])) {
+    // If only a month is requested, use the 1st of that month
+    $date_filter = $_GET['month_filter'] . '-01';
 }
 
 // Using ReportService to fetch data (Separation of Concerns)

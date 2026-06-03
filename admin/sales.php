@@ -36,14 +36,13 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Today's Sales List</h3>
         </div>
-        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;" onclick="event.stopPropagation()">
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
             <input type="text" class="table-filter" data-table="sales-table" placeholder="Filter sales..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
-            
             <div style="display: flex; gap: 5px;">
-                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -96,14 +95,13 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="daily-summary-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0; font-size: 1.1rem;">Today's Sales Summary by Dairy & Buyer</h3>
         </div>
-        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;" onclick="event.stopPropagation()">
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
             <input type="text" class="table-filter" data-table="daily-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
-            
             <div style="display: flex; gap: 5px;">
-                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -150,25 +148,18 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="monthly-sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0; font-size: 1.1rem;">Monthly Sales by Dairy & Buyer</h3>
         </div>
-        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 0.8rem;" onclick="event.stopPropagation()">
-            <!-- Row 1: Month Selection -->
-            <form action="" method="GET" style="display: flex; align-items: center; gap: 0.8rem;">
-                <label style="font-weight: 600; white-space: nowrap; font-size: 0.85rem; color: #555;">Select Month:</label>
-                <input type="month" name="month_filter" value="<?php echo htmlspecialchars($month_filter); ?>" onchange="this.form.submit()" class="form-control" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #eee; cursor: pointer; width: 160px; font-size: 0.85rem;">
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
+            <form action="" method="GET" style="margin: 0; display: flex; align-items: center;">
+                <input type="month" name="month_filter" value="<?php echo htmlspecialchars($month_filter); ?>" onchange="this.form.submit()" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; width: 130px; font-size: 0.8rem; cursor: pointer;">
             </form>
-
-            <!-- Row 2: Filter and Buttons -->
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <input type="text" class="table-filter" data-table="monthly-sales-table" placeholder="Filter monthly..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
-                
-                <div style="display: flex; gap: 5px;">
-                    <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-file-excel"></i> CSV
-                    </a>
-                    <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </a>
-                </div>
+            <input type="text" class="table-filter" data-table="monthly-sales-table" placeholder="Filter..." style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.8rem; width: 100px;">
+            <div style="display: flex; gap: 5px;">
+                <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
             </div>
         </div>
     </div>
@@ -180,6 +171,7 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                 <thead>
                     <tr>
                         <th>S/N</th>
+                        <th>Date</th>
                         <th>Dairy</th>
                         <th>Buyer</th>
                         <th>Quantity (L)</th>
@@ -193,6 +185,7 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                         <?php foreach ($monthly_detailed_sales as $index => $s): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Date"><?php echo date('d-M-Y', strtotime($s['sale_date'])); ?></td>
                                 <td data-label="Dairy"><strong><?php echo htmlspecialchars($s['name']); ?></strong></td>
                                 <td data-label="Buyer"><?php echo htmlspecialchars($s['sold_to']); ?></td>
                                 <td data-label="Quantity (L)"><?php echo number_format($s['qty'], 2); ?></td>

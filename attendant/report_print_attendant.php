@@ -115,6 +115,29 @@ $dairy_name = $stmt->fetchColumn();
             </tbody>
         </table>
 
+    <?php elseif ($type == 'monthly_summary'): ?>
+        <h3>Monthly Activity Summary - <?php echo date('F Y', strtotime($date)); ?></h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Collections</th>
+                    <th>Collected (L)</th>
+                    <th>Sold (L)</th>
+                    <th>Revenue (Kes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                require_once '../includes/ReportService.php';
+                $service = new ReportService($pdo);
+                $summary = $service->getMonthlyDairyCollectionSummary($date, $dairy_id);
+                foreach ($summary as $r): ?>
+                    <tr><td><?php echo date('d-M-Y', strtotime($r['activity_date'])); ?></td><td><?php echo $r['coll_count']; ?></td><td><?php echo number_format($r['coll_qty'], 2); ?></td><td><?php echo number_format($r['sale_qty'], 2); ?></td><td><strong>Kes <?php echo number_format($r['sale_amt'], 2); ?></strong></td></tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
     <?php elseif ($type == 'sales_summary'): ?>
         <table>
             <thead><tr><th>Buyer / Firm Name</th><th>Total Quantity (L)</th><th>Total Revenue (Kes)</th></tr></thead>

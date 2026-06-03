@@ -103,15 +103,16 @@ if ($type == 'monthly') $display_date = date('F Y', strtotime($date));
 
         <h3>Detailed Sales by Dairy & Buyer</h3>
         <table>
-            <thead><tr><th>Dairy</th><th>Buyer</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
+            <thead><tr><th>Date</th><th>Dairy</th><th>Buyer</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
             <tbody>
                 <?php
                 $detailed_query = ($type == 'daily_summary') ? "DATE(ms.date_sold) = '$date'" : "MONTH(ms.date_sold) = '$month' AND YEAR(ms.date_sold) = '$year'";
-                $stmt = $pdo->query("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+                $stmt = $pdo->query("SELECT DATE(ms.date_sold) as sale_date, d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
                                     FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
-                                    WHERE $detailed_query GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
+                                    WHERE $detailed_query GROUP BY sale_date, d.id, ms.sold_to ORDER BY sale_date DESC, d.name ASC");
                 while($r = $stmt->fetch()): ?>
                     <tr>
+                        <td><?php echo $r['sale_date']; ?></td>
                         <td><?php echo $r['name']; ?></td>
                         <td><?php echo $r['sold_to']; ?></td>
                         <td><?php echo number_format($r['qty'], 2); ?></td>
@@ -121,25 +122,36 @@ if ($type == 'monthly') $display_date = date('F Y', strtotime($date));
             </tbody>
         </table>
 
-        <?php if ($type == 'monthly'): ?>
-            <h3>Detailed Sales by Dairy & Buyer</h3>
-            <table>
-                <thead><tr><th>Dairy</th><th>Buyer</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
-                <tbody>
-                    <?php
-                    $stmt = $pdo->prepare("SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id WHERE MONTH(ms.date_sold) = ? AND YEAR(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC, ms.sold_to ASC");
-                    $stmt->execute([$month, $year]);
-                    while($r = $stmt->fetch()): ?>
-                        <tr>
-                            <td><?php echo $r['name']; ?></td>
-                            <td><?php echo $r['sold_to']; ?></td>
-                            <td><?php echo number_format($r['qty'], 2); ?></td>
-                            <td><?php echo number_format($r['amt'], 2); ?></td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
+    <?php elseif ($type == 'monthly_detailed_sales'): ?>
+        <h3>Detailed Sales for <?php echo date('F Y', strtotime($date)); ?></h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>S/N</th>
+                    <th>Date</th>
+                    <th>Dairy</th>
+                    <th>Buyer</th>
+                    <th>Quantity (L)</th>
+                    <th>Amount (Kes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                require_once '../includes/ReportService.php';
+                $service = new ReportService($pdo);
+                $detailed = $service->getMonthlyDetailedSales($date);
+                foreach ($detailed as $index => $r): ?>
+                    <tr>
+                        <td><?php echo $index + 1; ?></td>
+                        <td><?php echo date('d-M-Y', strtotime($r['sale_date'])); ?></td>
+                        <td><strong><?php echo $r['name']; ?></strong></td>
+                        <td><?php echo $r['sold_to']; ?></td>
+                        <td><?php echo number_format($r['qty'], 2); ?></td>
+                        <td><strong><?php echo number_format($r['amt'], 2); ?></strong></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
     <?php elseif ($type == 'daily_collections'): ?>
         <h3>Daily Collection Report</h3>
