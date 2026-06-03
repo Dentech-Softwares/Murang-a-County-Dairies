@@ -147,7 +147,6 @@ $farmers = $stmt->fetchAll();
             <h3 style="margin: 0;">Registered Farmers</h3>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
-            <input type="text" id="attendantFarmerSearch" placeholder="Filter farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
             <a href="?export=1" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
                 <i class="fas fa-download"></i> CSV
             </a>
@@ -195,18 +194,6 @@ $farmers = $stmt->fetchAll();
 </div>
 
 <script>
-document.getElementById('attendantFarmerSearch').addEventListener('keyup', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#attendantFarmerTable tbody tr');
-    
-    rows.forEach(row => {
-        if (row.cells.length > 1) { // Skip placeholder row
-            let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        }
-    });
-});
-
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);

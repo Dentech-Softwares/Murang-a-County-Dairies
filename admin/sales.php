@@ -36,12 +36,24 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Today's Sales List</h3>
         </div>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;" onclick="event.stopPropagation()">
+            <input type="text" class="table-filter" data-table="sales-table" placeholder="Filter sales..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            
+            <div style="display: flex; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="../admin/reports.php?export=daily_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="sales-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -84,17 +96,24 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="daily-summary-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0; font-size: 1.1rem;">Today's Sales Summary by Dairy & Buyer</h3>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation()">
-            <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-                <i class="fas fa-download"></i> CSV
-            </a>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;" onclick="event.stopPropagation()">
+            <input type="text" class="table-filter" data-table="daily-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            
+            <div style="display: flex; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="daily-summary-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="daily-summary-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -131,21 +150,33 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
             <i id="monthly-sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0; font-size: 1.1rem;">Monthly Sales by Dairy & Buyer</h3>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation()">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 0.8rem;" onclick="event.stopPropagation()">
+            <!-- Row 1: Month Selection -->
             <form action="" method="GET" style="display: flex; align-items: center; gap: 0.8rem;">
                 <label style="font-weight: 600; white-space: nowrap; font-size: 0.85rem; color: #555;">Select Month:</label>
-                <input type="month" name="month_filter" value="<?php echo htmlspecialchars($month_filter); ?>" onchange="this.form.submit()" class="form-control" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #eee; cursor: pointer; flex-grow: 1; font-size: 0.85rem;">
+                <input type="month" name="month_filter" value="<?php echo htmlspecialchars($month_filter); ?>" onchange="this.form.submit()" class="form-control" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #eee; cursor: pointer; width: 160px; font-size: 0.85rem;">
             </form>
-            <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary btn-export" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;" onclick="event.stopPropagation()">
-                <i class="fas fa-download"></i> CSV
-            </a>
+
+            <!-- Row 2: Filter and Buttons -->
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <input type="text" class="table-filter" data-table="monthly-sales-table" placeholder="Filter monthly..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                
+                <div style="display: flex; gap: 5px;">
+                    <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-file-excel"></i> CSV
+                    </a>
+                    <a href="../admin/reports.php?export=monthly_detailed_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="monthly-sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="monthly-sales-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -189,9 +220,31 @@ async function silentRefreshAdminSales() {
         document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
         document.querySelector('#daily-summary-collapsible .table-container').innerHTML = doc.querySelector('#daily-summary-collapsible .table-container').innerHTML;
         document.querySelector('#monthly-sales-collapsible .table-container').innerHTML = doc.querySelector('#monthly-sales-collapsible .table-container').innerHTML;
+
+        // Re-apply filters
+        document.querySelectorAll('.table-filter').forEach(input => {
+            if (input.value) {
+                let filter = input.value.toLowerCase();
+                let tableId = input.getAttribute('data-table');
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                });
+            }
+        });
     } catch (e) { console.error("Sales sync failed", e); }
 }
 setInterval(silentRefreshAdminSales, 1000);
+
+document.addEventListener('keyup', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    }
+});
 
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);

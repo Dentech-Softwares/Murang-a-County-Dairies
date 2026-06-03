@@ -219,27 +219,6 @@ $success = $_GET['success'] ?? null;
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?php echo $success; ?></div>
 <?php endif; ?>
 
-<!-- Filter Section -->
-<div class="content-card" style="margin-bottom: 2rem; text-align: left; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow);">
-    <form action="" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
-        <div class="form-group" style="margin: 0; flex: 1 1 200px;">
-            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555;">Filter by Date</label>
-            <input type="date" name="date" value="<?php echo $date_filter; ?>" onchange="this.form.submit()" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; cursor: pointer;">
-        </div>
-        <div class="form-group" style="margin: 0; flex: 1 1 250px;">
-            <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #555;">Filter by Farmer</label>
-            <select name="farmer_id" onchange="this.form.submit()" style="padding: 0.8rem; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer;">
-                <option value="">All Farmers</option>
-                <?php foreach ($all_farmers as $f): ?>
-                    <option value="<?php echo $f['id']; ?>" <?php echo $farmer_filter == $f['id'] ? 'selected' : ''; ?>>
-                        [<?php echo $f['farmer_number']; ?>] <?php echo $f['full_name']; ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-    </form>
-</div>
-
 <div class="row" style="margin-bottom: 2rem;">
     <div class="content-card" style="padding: 0; overflow: hidden;">
         <div onclick="toggleTable('buyer-summary-collapsible', 'bs-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
@@ -258,7 +237,7 @@ $success = $_GET['success'] ?? null;
         </div>
         <div id="buyer-summary-collapsible" class="collapsed" style="overflow: visible; display: block;">
             <div class="table-container">
-                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <table class="data-table" id="buyer-summary-table" style="box-shadow: none; border-radius: 0;">
                     <thead>
                         <tr>
                             <th>S/N</th>
@@ -312,7 +291,7 @@ $success = $_GET['success'] ?? null;
         </div>
         <div id="coll-collapsible" class="expanded" style="overflow: visible; display: block;">
             <div class="table-container">
-                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <table class="data-table" id="coll-history-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>S/N</th>
@@ -373,7 +352,7 @@ $success = $_GET['success'] ?? null;
         </div>
         <div id="sales-collapsible" class="expanded" style="overflow: visible; display: block;">
             <div class="table-container">
-                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <table class="data-table" id="sales-history-table" style="box-shadow: none; border-radius: 0;">
         <thead>
             <tr>
                 <th>S/N</th>

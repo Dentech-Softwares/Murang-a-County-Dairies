@@ -150,12 +150,15 @@ if (isset($_GET['success'])) $success = $_GET['success'];
             <i id="dairies-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">All Dairies</h3>
         </div>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; padding-right: 1.5rem;" onclick="event.stopPropagation()">
+            <input type="text" id="dairySearch" placeholder="Filter dairies..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
+        </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="dairies-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="dairies-list-table" style="box-shadow: none; border-radius: 0;">
     <thead>
         <tr>
             <th>S/N</th>
@@ -205,9 +208,31 @@ async function silentRefreshAdminDairies() {
 
         const container = document.querySelector('#dairies-collapsible .table-container');
         if (container) container.innerHTML = doc.querySelector('#dairies-collapsible .table-container').innerHTML;
+
+        // Re-apply filter
+        const filterInput = document.getElementById('dairySearch');
+        if (filterInput && filterInput.value) {
+            let filter = filterInput.value.toLowerCase();
+            document.querySelectorAll('#dairies-list-table tbody tr').forEach(row => {
+                if (row.cells.length > 1) {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                }
+            });
+        }
     } catch (e) { console.error("Dairies sync failed", e); }
 }
 setInterval(silentRefreshAdminDairies, 1000);
+
+document.getElementById('dairySearch')?.addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#dairies-list-table tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    });
+});
 </script>
 
 <?php require_once '../includes/admin_footer.php'; ?>

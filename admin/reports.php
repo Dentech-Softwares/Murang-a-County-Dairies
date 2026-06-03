@@ -241,6 +241,9 @@ $daily_profit = $daily_revenue - $daily_cost;
                     <i id="coll-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                     <h3 style="margin: 0; font-size: 1.1rem;">Collections by Dairy</h3>
                 </div>
+                <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                    <input type="text" class="table-filter" data-table="coll-table" placeholder="Filter collections..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                </div>
                 <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                     <a href="?export=daily_collections&date=<?php echo urlencode($date_filter); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none;">
                         <i class="fas fa-file-excel"></i> CSV
@@ -252,7 +255,7 @@ $daily_profit = $daily_revenue - $daily_cost;
             </div>
             <div id="coll-collapsible" class="collapsed" style="display: block; overflow: visible;">
                 <div class="table-container">
-                    <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                    <table class="data-table" id="coll-table" style="box-shadow: none; border-radius: 0;">
                         <thead>
                             <tr>
                                 <th>S/N</th>
@@ -296,6 +299,9 @@ $daily_profit = $daily_revenue - $daily_cost;
                     <i id="dds-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                     <h3 style="margin: 0; font-size: 1.1rem;">Daily Sales Detailed Summary</h3>
                 </div>
+                <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                    <input type="text" class="table-filter" data-table="dds-table" placeholder="Filter detailed sales..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                </div>
                 <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                     <a href="?export=daily_detailed_sales&date=<?php echo urlencode($date_filter); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none;">
                         <i class="fas fa-file-excel"></i> CSV
@@ -307,7 +313,7 @@ $daily_profit = $daily_revenue - $daily_cost;
             </div>
             <div id="daily-detailed-sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
                 <div class="table-container">
-                    <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                    <table class="data-table" id="dds-table" style="box-shadow: none; border-radius: 0;">
                         <thead>
                             <tr>
                                 <th>S/N</th>
@@ -353,6 +359,9 @@ $daily_profit = $daily_revenue - $daily_cost;
                     <i id="sales-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                     <h3 style="margin: 0; font-size: 1.1rem;">Sales by Dairy</h3>
                 </div>
+                <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                    <input type="text" class="table-filter" data-table="sales-dairy-table" placeholder="Filter sales..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                </div>
                 <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                     <a href="?export=daily_sales&date=<?php echo urlencode($date_filter); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none;">
                         <i class="fas fa-file-excel"></i> CSV
@@ -364,7 +373,7 @@ $daily_profit = $daily_revenue - $daily_cost;
             </div>
             <div id="sales-collapsible" class="collapsed" style="display: block; overflow: visible;">
                 <div class="table-container">
-                    <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                    <table class="data-table" id="sales-dairy-table" style="box-shadow: none; border-radius: 0;">
                         <thead>
                             <tr>
                                 <th>S/N</th>
@@ -472,9 +481,40 @@ async function silentRefreshReports() {
             const newSource = doc.querySelector(`#${id} .table-container`);
             if (container && newSource) container.innerHTML = newSource.innerHTML;
         });
+
+        // Re-apply filters
+        document.querySelectorAll('.table-filter').forEach(input => {
+            if (input.value) {
+                let filter = input.value.toLowerCase();
+                let tableId = input.getAttribute('data-table');
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                });
+            }
+        });
+        const fSearch = document.getElementById('farmerSearch');
+        if (fSearch && fSearch.value) {
+            let filter = fSearch.value.toLowerCase();
+            document.querySelectorAll('#farmerTable tbody tr').forEach(row => {
+                if (row.cells.length > 1) {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                }
+            });
+        }
     } catch (e) { console.error("Admin report sync failed", e); }
 }
 setInterval(silentRefreshReports, 1000); // Sync every 1 second
+
+document.addEventListener('keyup', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    }
+});
 
 document.getElementById('farmerSearch').addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();

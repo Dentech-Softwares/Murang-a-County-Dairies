@@ -2,6 +2,15 @@
 require_once '../includes/db_connect.php';
 require_once '../includes/admin_header.php';
 
+// Handle Export
+if (isset($_GET['export'])) {
+    $format = $_GET['format'] ?? 'csv';
+    if ($format == 'pdf') {
+        header("Location: reports.php?export=daily_summary&date=" . date('Y-m-d') . "&format=pdf");
+        exit();
+    }
+}
+
 // Stats queries
 $total_dairies = $pdo->query("SELECT COUNT(*) FROM dairies")->fetchColumn();
 $total_milk_collected = $pdo->query("SELECT SUM(quantity) FROM milk_collection WHERE DATE(date_collected) = CURDATE()")->fetchColumn() ?: 0;
@@ -113,6 +122,16 @@ for ($i = 6; $i >= 0; $i--) {
                     <i id="toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                     <h3 style="margin: 0; font-size: 1.1rem;">Today's Activities</h3>
                 </div>
+                <div class="table-actions-wrapper" onclick="event.stopPropagation()">
+                    <div class="search-input-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="dashActivitySearch" placeholder="Search activities...">
+                    </div>
+                    <div class="export-buttons">
+                        <a href="?export=1&format=csv" class="btn-export csv" title="Export CSV"><i class="fas fa-file-csv"></i></a>
+                        <a href="?export=1&format=pdf" class="btn-export pdf" title="Export PDF"><i class="fas fa-file-pdf"></i></a>
+                    </div>
+                </div>
             </div>
 
             <!-- Table Content (Collapsible) -->
@@ -177,8 +196,29 @@ async function silentRefreshAdminDashboard() {
             window.milkTrendsChart.update('none'); // Update without animation for a real-time feel
         }
     } catch (e) { console.error("Dashboard sync failed", e); }
+
+    // Re-apply filter
+    const filterInput = document.getElementById('dashActivitySearch');
+    if (filterInput && filterInput.value) {
+        let filter = filterInput.value.toLowerCase();
+        document.querySelectorAll('#recent-table tbody tr').forEach(row => {
+            if (row.cells.length > 1) {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            }
+        });
+    }
 }
 setInterval(silentRefreshAdminDashboard, 1000);
+
+document.getElementById('dashActivitySearch')?.addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#recent-table tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        }
+    });
+});
 
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);

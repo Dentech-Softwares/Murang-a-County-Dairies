@@ -180,7 +180,7 @@ $success = $_GET['success'] ?? null;
             <!-- Table Content (Collapsible) -->
             <div id="activity-table" class="collapsed" style="overflow: visible; display: block;">
                 <div class="table-container">
-                    <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                    <table class="data-table" id="recent-activity-table" style="box-shadow: none; border-radius: 0;">
                         <thead>
                             <tr>
                                 <th>Type</th>

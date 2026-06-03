@@ -338,6 +338,65 @@ function getInitials($name) {
                 font-size: 0.8rem;
             }
         }
+
+        /* Professional Table Header Actions */
+        .table-actions-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            flex-grow: 1;
+            padding-right: 1.5rem;
+        }
+        .search-input-container {
+            position: relative;
+            flex: 1;
+            max-width: 250px;
+            min-width: 180px;
+        }
+        .search-input-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 0.85rem;
+            background: none !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        .search-input-container input {
+            padding: 0.6rem 0.6rem 0.6rem 2.2rem !important;
+            border-radius: 8px !important;
+            border: 1px solid #ddd !important;
+            font-size: 0.85rem !important;
+            width: 100% !important;
+            background: #fdfdfd !important;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-export {
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        .btn-export.csv { background: #2e7d32; }
+        .btn-export.pdf { background: #d32f2f; }
+        .btn-export:hover { opacity: 0.85; }
+
+        @media (max-width: 768px) {
+            .table-actions-wrapper {
+                width: 100%;
+                padding-right: 0;
+                margin-top: 10px;
+                justify-content: space-between;
+            }
+        }
         .sidebar-time {
             margin-top: 2rem;
             padding: 1rem;

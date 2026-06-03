@@ -171,7 +171,9 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                 <i id="attendants-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                 <h3 style="margin: 0;">Attendants List</h3>
             </div>
-            <form action="" method="GET" style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation()">
+            <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
+                <input type="text" id="attendantSearch" placeholder="Filter attendants..." style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                <form action="" method="GET" style="display: flex; align-items: center; gap: 10px;">
                 <label style="font-size: 0.9rem; color: #666;">Filter Dairy:</label>
                 <select name="dairy_id" onchange="this.form.submit()" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; background: white; font-size: 0.85rem; cursor: pointer;">
                     <option value="">All Dairies</option>
@@ -187,7 +189,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         <!-- Table Content (Collapsible) -->
         <div id="attendants-collapsible" class="collapsed" style="display: block; overflow: visible;">
             <div class="table-container">
-                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <table class="data-table" id="attendants-list-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -223,5 +225,17 @@ if (isset($_GET['success'])) $success = $_GET['success'];
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('attendantSearch')?.addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#attendants-list-table tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        }
+    });
+});
+</script>
 
 <?php require_once '../includes/admin_footer.php'; ?>

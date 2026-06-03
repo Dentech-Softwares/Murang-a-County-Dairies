@@ -2,6 +2,15 @@
 require_once '../includes/db_connect.php';
 require_once '../includes/admin_header.php';
 
+// Handle Export
+if (isset($_GET['export'])) {
+    $format = $_GET['format'] ?? 'csv';
+    if ($format == 'pdf') {
+        header("Location: reports.php?export=daily_collections&date=" . date('Y-m-d') . "&format=pdf");
+        exit();
+    }
+}
+
 // Get total milk collected per dairy (Today Only)
 $stmt = $pdo->query("SELECT d.name as dairy_name, 
                     COALESCE(SUM(CASE WHEN DATE(mc.date_collected) = CURDATE() THEN mc.quantity ELSE 0 END), 0) as total_litres,
@@ -54,12 +63,22 @@ $collections = $stmt->fetchAll();
             <i id="milk-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0; font-size: 1.1rem;">Today's Collection Summary</h3>
         </div>
+        <div class="table-actions-wrapper" onclick="event.stopPropagation()">
+            <div class="search-input-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="milkSummarySearch" placeholder="Search collections...">
+            </div>
+            <div class="export-buttons">
+                <a href="?export=1&format=csv" class="btn-export csv" title="Export CSV"><i class="fas fa-file-csv"></i></a>
+                <a href="?export=1&format=pdf" class="btn-export pdf" title="Export PDF"><i class="fas fa-file-pdf"></i></a>
+            </div>
+        </div>
     </div>
 
     <!-- Table Content (Collapsible) -->
     <div id="milk-collapsible" class="collapsed" style="display: block; overflow: visible;">
         <div class="table-container">
-            <table class="data-table" style="box-shadow: none; border-radius: 0;">
+            <table class="data-table" id="milk-summary-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -106,9 +125,30 @@ async function silentRefreshAdminMilk() {
 
         document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
         document.querySelector('#milk-collapsible .table-container').innerHTML = doc.querySelector('#milk-collapsible .table-container').innerHTML;
+
+        // Re-apply filter
+        const filterInput = document.getElementById('milkSummarySearch');
+        if (filterInput && filterInput.value) {
+            let filter = filterInput.value.toLowerCase();
+            document.querySelectorAll('#milk-summary-table tbody tr').forEach(row => {
+                if (row.cells.length > 1) {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                }
+            });
+        }
     } catch (e) { console.error("Milk records sync failed", e); }
 }
 setInterval(silentRefreshAdminMilk, 1000);
+
+document.getElementById('milkSummarySearch')?.addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#milk-summary-table tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        }
+    });
+});
 </script>
 
 <?php require_once '../includes/admin_footer.php'; ?>
