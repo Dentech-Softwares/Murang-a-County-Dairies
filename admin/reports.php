@@ -453,6 +453,29 @@ $daily_profit = $daily_revenue - $daily_cost;
 </div>
 
 <script>
+/**
+ * Silent background refresh for real-time Admin data
+ */
+async function silentRefreshReports() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        if (!response.ok) return;
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        const stats = document.querySelector('.stats-grid');
+        if (stats) stats.innerHTML = doc.querySelector('.stats-grid').innerHTML;
+
+        ['coll-collapsible', 'daily-detailed-sales-collapsible', 'sales-collapsible', 'farmer-collapsible'].forEach(id => {
+            const container = document.querySelector(`#${id} .table-container`);
+            const newSource = doc.querySelector(`#${id} .table-container`);
+            if (container && newSource) container.innerHTML = newSource.innerHTML;
+        });
+    } catch (e) { console.error("Admin report sync failed", e); }
+}
+setInterval(silentRefreshReports, 1000); // Sync every 1 second
+
 document.getElementById('farmerSearch').addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#farmerTable tbody tr');

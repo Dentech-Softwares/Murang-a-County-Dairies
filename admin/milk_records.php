@@ -93,4 +93,22 @@ $collections = $stmt->fetchAll();
     </div>
 </div>
 
+<script>
+/**
+ * Silent background refresh for real-time Milk Collection Records
+ */
+async function silentRefreshAdminMilk() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
+        document.querySelector('#milk-collapsible .table-container').innerHTML = doc.querySelector('#milk-collapsible .table-container').innerHTML;
+    } catch (e) { console.error("Milk records sync failed", e); }
+}
+setInterval(silentRefreshAdminMilk, 1000);
+</script>
+
 <?php require_once '../includes/admin_footer.php'; ?>

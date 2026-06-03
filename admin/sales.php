@@ -176,6 +176,23 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
 </div>
 
 <script>
+/**
+ * Silent background refresh for real-time Sales Records
+ */
+async function silentRefreshAdminSales() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
+        document.querySelector('#daily-summary-collapsible .table-container').innerHTML = doc.querySelector('#daily-summary-collapsible .table-container').innerHTML;
+        document.querySelector('#monthly-sales-collapsible .table-container').innerHTML = doc.querySelector('#monthly-sales-collapsible .table-container').innerHTML;
+    } catch (e) { console.error("Sales sync failed", e); }
+}
+setInterval(silentRefreshAdminSales, 1000);
+
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);

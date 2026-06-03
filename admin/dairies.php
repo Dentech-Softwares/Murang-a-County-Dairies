@@ -192,4 +192,22 @@ if (isset($_GET['success'])) $success = $_GET['success'];
 </div>
 </div>
 
+<script>
+/**
+ * Silent background refresh for Dairies and Attendants
+ */
+async function silentRefreshAdminDairies() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        const container = document.querySelector('#dairies-collapsible .table-container');
+        if (container) container.innerHTML = doc.querySelector('#dairies-collapsible .table-container').innerHTML;
+    } catch (e) { console.error("Dairies sync failed", e); }
+}
+setInterval(silentRefreshAdminDairies, 1000);
+</script>
+
 <?php require_once '../includes/admin_footer.php'; ?>

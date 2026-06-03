@@ -4,9 +4,12 @@ require_once '../includes/db_connect.php';
 // Handle CSV Export
 if (isset($_GET['export'])) {
     session_start();
+    // Ensure timezone is set for accurate default date calculation
+    date_default_timezone_set('Africa/Nairobi');
+
     $type = $_GET['export'];
     $dairy_id = $_SESSION['dairy_id'];
-    $date = $_GET['date'] ?? '';
+    $date = $_GET['date'] ?? date('Y-m-d');
     $farmer_id = $_GET['farmer_id'] ?? null;
     $format = $_GET['format'] ?? 'csv';
 
@@ -133,15 +136,18 @@ require_once '../includes/attendant_header.php';
             document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
         } catch (e) { console.error("Records sync failed", e); }
     }
-    setInterval(silentRefreshRecords, 30000);
+    setInterval(silentRefreshRecords, 1000);
 </script>
 
 <?php
 
+// Force local timezone to match database for "Today" queries
+date_default_timezone_set('Africa/Nairobi');
+
 $dairy_id = $_SESSION['dairy_id'];
 
 // Get filters
-$date_filter = $_GET['date'] ?? '';
+$date_filter = $_GET['date'] ?? date('Y-m-d');
 $farmer_filter = $_GET['farmer_id'] ?? '';
 
 // Get all farmers for filter dropdown

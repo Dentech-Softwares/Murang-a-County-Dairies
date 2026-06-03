@@ -16,17 +16,19 @@ if (isset($_POST['record_milk'])) {
         die("CSRF token validation failed.");
     }
 
-    $farmer_id = $_POST['farmer_id'];
-    $quantity = $_POST['quantity'];
+    $farmer_id = $_POST['farmer_id'] ?? '';
+    $quantity = $_POST['quantity'] ?? 0;
     $total_price = $quantity * $buying_price;
     $attendant_id = $_SESSION['attendant_id'];
 
-    // Strict Validation: Prevent zero or negative quantities
-    if ($quantity <= 0) {
+    // Validation
+    if (empty($farmer_id)) {
+        $error = "Please select a farmer from the list.";
+    } elseif ($quantity <= 0) {
         $error = "Quantity must be greater than zero.";
     }
 
-    if (!empty($farmer_id) && !empty($quantity) && !isset($error)) {
+    if (empty($error)) {
         $stmt = $pdo->prepare("INSERT INTO milk_collection (dairy_id, farmer_id, attendant_id, quantity, price_per_litre, total_price) 
                               VALUES (?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$dairy_id, $farmer_id, $attendant_id, $quantity, $buying_price, $total_price])) {

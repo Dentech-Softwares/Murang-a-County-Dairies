@@ -113,7 +113,7 @@ $farmers = $stmt->fetchAll();
             document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
         } catch (e) { console.error("Farmer sync failed", e); }
     }
-    setInterval(silentRefreshFarmers, 60000);
+    setInterval(silentRefreshFarmers, 1000);
 </script>
 
 <?php if ($success): ?>

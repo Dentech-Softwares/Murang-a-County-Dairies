@@ -27,12 +27,18 @@ if (isset($_POST['record_sale'])) {
         die("CSRF token validation failed.");
     }
 
-    $sold_to = $_POST['sold_to'];
-    $quantity = $_POST['quantity'];
+    $sold_to = $_POST['sold_to'] ?? '';
+    $quantity = $_POST['quantity'] ?? 0;
     $total_price = $quantity * $selling_price;
     $attendant_id = $_SESSION['attendant_id'];
 
-    if (!empty($sold_to) && !empty($quantity) && $quantity > 0) {
+    if (empty($sold_to)) {
+        $error = "Please enter who you are selling to.";
+    } elseif ($quantity <= 0) {
+        $error = "Quantity must be greater than zero.";
+    }
+
+    if (empty($error)) {
         if ($quantity > $available_stock) {
             $error = "Insufficient stock! Only " . number_format($available_stock, 2) . " L available.";
         } else {

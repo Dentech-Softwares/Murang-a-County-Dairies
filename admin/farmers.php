@@ -61,6 +61,21 @@ $farmers = $stmt->fetchAll();
 </div>
 
 <script>
+/**
+ * Silent background refresh for Farmer list
+ */
+async function silentRefreshAdminFarmers() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
+    } catch (e) { console.error("Farmer sync failed", e); }
+}
+setInterval(silentRefreshAdminFarmers, 1000);
+
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);

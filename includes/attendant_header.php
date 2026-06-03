@@ -546,4 +546,49 @@ function getInitials($name) {
                                     document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
                                     // Toggle current
                                     if (!isShown) mobileDropdown.classList.add("show");
+                                }
+                            } else {
+                                if (desktopDropdown) {
+                                    const isShown = desktopDropdown.classList.contains('show');
+                                    // Close all first
+                                    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                                    // Toggle current
+                                    if (!isShown) desktopDropdown.classList.add("show");
+                                }
+                            }
+                        });
+                    });
+
+                    // Close sidebar when clicking menu items on mobile
+                    const menuItems = document.querySelectorAll('.sidebar-menu a');
+                    menuItems.forEach(item => {
+                        item.addEventListener('click', () => {
+                            if (window.innerWidth <= 768) {
+                                toggleSidebar();
+                            }
+                        });
+                    });
+
+                    // Close dropdowns when clicking or touching any other part of the screen
+                    const handleOutsideInteraction = (event) => {
+                        if (!event.target.closest('.profile-dropdown')) {
+                            document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+                        }
+                    };
+
+                    document.addEventListener('click', handleOutsideInteraction);
+                    document.addEventListener('touchstart', handleOutsideInteraction, {
+                        passive: true
+                    });
+                });
+
+                function updateTime() {
+                    const timeSpan = document.getElementById('current-time');
+                    if (timeSpan) {
+                        const now = new Date();
+                        timeSpan.innerText = now.toLocaleTimeString();
+                    }
+                }
+                setInterval(updateTime, 1000);
+            </script>
                              

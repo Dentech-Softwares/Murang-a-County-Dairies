@@ -20,7 +20,7 @@ require_once '../includes/attendant_header.php';
             document.querySelector('#activity-table .table-container').innerHTML = doc.querySelector('#activity-table .table-container').innerHTML;
         } catch (e) { console.error("Data sync failed", e); }
     }
-    setInterval(silentRefresh, 30000);
+    setInterval(silentRefresh, 1000);
 
     function toggleTable(containerId, iconId) {
         const container = document.getElementById(containerId);

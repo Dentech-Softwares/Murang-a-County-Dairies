@@ -86,6 +86,13 @@ for ($i = 6; $i >= 0; $i--) {
     </div>
 </div>
 
+<!-- Hidden container to store chart data for silent refresh -->
+<div id="chart-data-refresh" style="display:none;" 
+     data-labels='<?php echo h(json_encode($chart_labels)); ?>'
+     data-collections='<?php echo h(json_encode($chart_collections)); ?>'
+     data-sales='<?php echo h(json_encode($chart_sales)); ?>'>
+</div>
+
 <div class="row" style="margin-top: 2rem;">
     <div class="col" style="flex: 1;">
         <div class="content-card">
@@ -144,6 +151,35 @@ for ($i = 6; $i >= 0; $i--) {
 </div>
 
 <script>
+/**
+ * Silent background refresh for real-time Admin Dashboard
+ */
+async function silentRefreshAdminDashboard() {
+    if (document.hidden) return;
+    try {
+        const response = await fetch(window.location.href);
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
+        document.querySelector('#collapsible-table .table-container').innerHTML = doc.querySelector('#collapsible-table .table-container').innerHTML;
+
+        // Update Chart Data
+        const newDataContainer = doc.querySelector('#chart-data-refresh');
+        if (newDataContainer && window.milkTrendsChart) {
+            const newLabels = JSON.parse(newDataContainer.getAttribute('data-labels'));
+            const newCollections = JSON.parse(newDataContainer.getAttribute('data-collections'));
+            const newSales = JSON.parse(newDataContainer.getAttribute('data-sales'));
+            
+            window.milkTrendsChart.data.labels = newLabels;
+            window.milkTrendsChart.data.datasets[0].data = newCollections;
+            window.milkTrendsChart.data.datasets[1].data = newSales;
+            window.milkTrendsChart.update('none'); // Update without animation for a real-time feel
+        }
+    } catch (e) { console.error("Dashboard sync failed", e); }
+}
+setInterval(silentRefreshAdminDashboard, 1000);
+
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);
@@ -154,8 +190,8 @@ function toggleTable(containerId, iconId) {
 }
 
 // Initialize Chart
-const ctx = document.getElementById('milkTrendsChart').getContext('2d');
-new Chart(ctx, {
+const ctx = document.getElementById('milkTrendsChart');
+window.milkTrendsChart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: <?php echo json_encode($chart_labels); ?>,
