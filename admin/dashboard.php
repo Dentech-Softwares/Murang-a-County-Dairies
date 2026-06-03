@@ -2,6 +2,9 @@
 require_once '../includes/db_connect.php';
 require_once '../includes/admin_header.php';
 
+// Set timezone to Nairobi
+date_default_timezone_set('Africa/Nairobi');
+
 // Handle Export
 if (isset($_GET['export'])) {
     $format = $_GET['format'] ?? 'csv';
@@ -39,18 +42,20 @@ $stmt = $pdo->query("SELECT
 $daily_dairy_summary = $stmt->fetchAll();
 
 // Data for Chart.js Trends (Last 7 Days)
-$stmt = $pdo->query("SELECT DATE(date_collected) as d, SUM(quantity) as q FROM milk_collection WHERE date_collected >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$stmt = $pdo->query("SELECT DATE(date_collected) as d, SUM(quantity) as q FROM milk_collection WHERE date_collected >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
 $col_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$stmt = $pdo->query("SELECT DATE(date_sold) as d, SUM(quantity) as q FROM milk_sales WHERE date_sold >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$stmt = $pdo->query("SELECT DATE(date_sold) as d, SUM(quantity) as q FROM milk_sales WHERE date_sold >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
 $sale_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $chart_labels = [];
 $chart_collections = [];
 $chart_sales = [];
 
+// Today is June 04, we want to show up to today
+$now = time();
 for ($i = 6; $i >= 0; $i--) {
-    $date = date('Y-m-d', strtotime("-$i days"));
+    $date = date('Y-m-d', strtotime("-$i days", $now));
     $chart_labels[] = date('M d', strtotime($date));
     $chart_collections[] = $col_data[$date] ?? 0;
     $chart_sales[] = $sale_data[$date] ?? 0;
@@ -182,7 +187,12 @@ async function silentRefreshAdminDashboard() {
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
         document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
-        document.querySelector('#collapsible-table .table-container').innerHTML = doc.querySelector('#collapsible-table .table-container').innerHTML;
+        
+        // Update Activities Table only if it's not empty in the new document
+        const newTableContainer = doc.querySelector('#collapsible-table .table-container');
+        if (newTableContainer && newTableContainer.innerHTML.trim() !== "") {
+            document.querySelector('#collapsible-table .table-container').innerHTML = newTableContainer.innerHTML;
+        }
 
         // Update Chart Data
         const newDataContainer = doc.querySelector('#chart-data-refresh');
