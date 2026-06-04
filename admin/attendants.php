@@ -127,7 +127,19 @@ if (isset($_GET['success'])) $success = $_GET['success'];
     <div class="alert alert-error"><?php echo $error; ?></div>
 <?php endif; ?>
 
-<div class="responsive-grid-2" style="margin-bottom: 2rem;">
+<style>
+    .attendants-layout-wrapper {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+    @media (max-width: 1024px) {
+        .attendants-layout-wrapper { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="attendants-layout-wrapper" style="margin-bottom: 2rem; width: 100%;">
     <!-- Add/Edit Form -->
     <div class="content-card" style="text-align: left; height: fit-content;">
         <h3><?php echo $edit_attendant ? 'Edit Attendant' : 'Add New Attendant'; ?></h3>
@@ -171,23 +183,24 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                 <i id="attendants-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                 <h3 style="margin: 0;">Attendants List</h3>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
+            <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;" onclick="event.stopPropagation()">
                 <input type="text" id="attendantSearch" placeholder="Filter attendants..." style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
                 <form action="" method="GET" style="display: flex; align-items: center; gap: 10px;">
-                <label style="font-size: 0.9rem; color: #666;">Filter Dairy:</label>
-                <select name="dairy_id" onchange="this.form.submit()" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; background: white; font-size: 0.85rem; cursor: pointer;">
-                    <option value="">All Dairies</option>
-                    <?php foreach ($dairies as $d): ?>
-                        <option value="<?php echo $d['id']; ?>" <?php echo $dairy_filter == $d['id'] ? 'selected' : ''; ?>>
-                            <?php echo $d['name']; ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
+                    <label style="font-size: 0.9rem; color: #666;">Filter Dairy:</label>
+                    <select name="dairy_id" onchange="this.form.submit()" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; background: white; font-size: 0.85rem; cursor: pointer;">
+                        <option value="">All Dairies</option>
+                        <?php foreach ($dairies as $d): ?>
+                            <option value="<?php echo $d['id']; ?>" <?php echo $dairy_filter == $d['id'] ? 'selected' : ''; ?>>
+                                <?php echo $d['name']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            </div>
         </div>
 
         <!-- Table Content (Collapsible) -->
-        <div id="attendants-collapsible" class="collapsed" style="display: block; overflow: visible;">
+        <div id="attendants-collapsible" style="display: block; overflow: visible;">
             <div class="table-container">
                 <table class="data-table" id="attendants-list-table" style="box-shadow: none; border-radius: 0;">
                 <thead>
@@ -201,7 +214,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                 </thead>
                 <tbody>
                     <?php if (empty($attendants)): ?>
-                        <tr><td colspan="5" style="text-align: center;">No attendants found.</td></tr>
+                        <tr><td colspan="5" style="text-align: center !important;">No attendants found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($attendants as $index => $a): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

@@ -193,7 +193,7 @@ $success = $_GET['success'] ?? null;
                         </thead>
                         <tbody>
                             <?php if (empty($activities)): ?>
-                                <tr><td colspan="6" style="text-align: center;">No activities today.</td></tr>
+                                <tr><td colspan="6" style="text-align: center !important;">No activities today.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($activities as $index => $act): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

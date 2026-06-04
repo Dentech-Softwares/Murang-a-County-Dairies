@@ -155,7 +155,7 @@ for ($i = 6; $i >= 0; $i--) {
                         </thead>
                         <tbody>
                             <?php if (empty($daily_dairy_summary)): ?>
-                                <tr><td colspan="5" style="text-align: center;">No collections or sales recorded yet today.</td></tr>
+                                <tr><td colspan="5" style="text-align: center !important;">No collections or sales recorded yet today.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($daily_dairy_summary as $index => $row): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

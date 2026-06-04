@@ -67,7 +67,7 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                 </thead>
                 <tbody>
                     <?php if (empty($sales)): ?>
-                        <tr><td colspan="8" style="text-align: center;">No milk sales recorded yet today.</td></tr>
+                        <tr><td colspan="8" style="text-align: center !important;">No milk sales recorded yet today.</td></tr>
                     <?php else: ?>
                         <?php foreach ($sales as $index => $s): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
@@ -123,7 +123,7 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                 </thead>
                 <tbody>
                     <?php if (empty($daily_summary)): ?>
-                        <tr><td colspan="5" style="text-align: center;">No sales summary for today.</td></tr>
+                        <tr><td colspan="5" style="text-align: center !important;">No sales summary for today.</td></tr>
                     <?php else: ?>
                         <?php foreach ($daily_summary as $index => $s): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
@@ -180,7 +180,7 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                 </thead>
                 <tbody>
                     <?php if (empty($monthly_detailed_sales)): ?>
-                        <tr><td colspan="5" style="text-align: center;">No sales recorded for <?php echo date('F Y', strtotime($month_filter)); ?>.</td></tr>
+                        <tr><td colspan="5" style="text-align: center !important;">No sales recorded for <?php echo date('F Y', strtotime($month_filter)); ?>.</td></tr>
                     <?php else: ?>
                         <?php foreach ($monthly_detailed_sales as $index => $s): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

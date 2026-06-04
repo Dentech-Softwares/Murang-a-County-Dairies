@@ -174,7 +174,7 @@ $farmers = $stmt->fetchAll();
                 </thead>
                 <tbody>
                     <?php if (empty($farmers)): ?>
-                        <tr><td colspan="5" style="text-align: center;">No farmers registered yet.</td></tr>
+                        <tr><td colspan="6" style="text-align: center !important;">No farmers registered yet.</td></tr>
                     <?php else: ?>
                         <?php foreach ($farmers as $index => $f): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

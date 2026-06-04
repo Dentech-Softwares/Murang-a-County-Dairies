@@ -20,7 +20,6 @@ $dairy_payments = $stmt->fetchAll();
 ?>
 
 <h2>Payments & Financials</h2>
-here
 <div class="row">
     <div class="col" style="flex: 1; width: 100%;">
 <div class="content-card">
@@ -54,7 +53,7 @@ here
                 </thead>
                 <tbody>
                     <?php if (empty($dairy_payments)): ?>
-                        <tr><td colspan="4" style="text-align: center;">No sales recorded.</td></tr>
+                        <tr><td colspan="4" style="text-align: center !important;">No sales recorded.</td></tr>
                     <?php else: ?>
                         <?php foreach ($dairy_payments as $index => $dp): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">

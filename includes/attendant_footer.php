@@ -1,9 +1,9 @@
-        </div> <!-- Closing main-content -->
-    </div> <!-- Closing attendant-layout -->
-
-    <footer class="main-footer" style="background: #fff; border-top: 1px solid #eee; padding: 2rem 8%; text-align: center; color: #777; font-size: 0.9rem;">
+    <footer class="main-footer" style="background: #fff; border-top: 1px solid #eee; padding: 2rem 0; text-align: center; color: #777; font-size: 0.9rem; margin-top: 2rem; width: 100%;">
         <p>&copy; <?php echo date('Y'); ?> Murang'a County Dairy Management System. All rights reserved.</p>
     </footer>
+
+        </div> <!-- Closing main-content -->
+    </div> <!-- Closing attendant-layout -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -344,7 +344,7 @@ $success = $_GET['success'] ?? null;
                         $buyer_summary = $stmt->fetchAll();
                         
                         if (empty($buyer_summary)): ?>
-                            <tr><td colspan="4" style="text-align: center;">No sales records found for this period.</td></tr>
+                            <tr><td colspan="4" style="text-align: center !important;">No sales records found for this period.</td></tr>
                         <?php else: ?>
                             <?php foreach ($buyer_summary as $index => $bs): ?>
                                 <tr>
@@ -394,7 +394,7 @@ $success = $_GET['success'] ?? null;
         </thead>
         <tbody>
             <?php if (empty($collections)): ?>
-                <tr><td colspan="7" style="text-align: center;">No collections recorded.</td></tr>
+                <tr><td colspan="7" style="text-align: center !important;">No collections recorded.</td></tr>
             <?php else: ?>
                 <?php 
                 foreach ($collections as $index => $c): 
@@ -455,7 +455,7 @@ $success = $_GET['success'] ?? null;
         </thead>
         <tbody>
             <?php if (empty($sales)): ?>
-                <tr><td colspan="7" style="text-align: center;">No sales recorded.</td></tr>
+                <tr><td colspan="7" style="text-align: center !important;">No sales recorded.</td></tr>
             <?php else: ?>
                 <?php 
                 foreach ($sales as $index => $s): 
@@ -508,7 +508,7 @@ $success = $_GET['success'] ?? null;
                     </thead>
                     <tbody>
                         <?php if (empty($monthly_summary)): ?>
-                            <tr><td colspan="5" style="text-align: center;">No activity found for the selected month.</td></tr>
+                            <tr><td colspan="5" style="text-align: center !important;">No activity found for the selected month.</td></tr>
                         <?php else: ?>
                             <?php foreach ($monthly_summary as $ms): ?>
                                 <tr><td><?php echo date('d-M-Y', strtotime($ms['activity_date'])); ?></td><td><?php echo $ms['coll_count']; ?> entries</td><td><?php echo number_format($ms['coll_qty'], 1); ?> L</td><td><?php echo number_format($ms['sale_qty'], 1); ?> L</td><td><strong>Kes <?php echo number_format($ms['sale_amt'], 2); ?></strong></td></tr>

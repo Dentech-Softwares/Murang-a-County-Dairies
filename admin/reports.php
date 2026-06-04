@@ -282,7 +282,7 @@ $daily_profit = $daily_revenue - $daily_cost;
                         </thead>
                         <tbody>
                             <?php if (empty($day_collections)): ?>
-                                <tr><td colspan="5" style="text-align: center;">No collections on this day.</td></tr>
+                                <tr><td colspan="5" style="text-align: center !important;">No collections on this day.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($day_collections as $index => $c): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
@@ -346,7 +346,7 @@ $daily_profit = $daily_revenue - $daily_cost;
                             $stmt->execute([$date_filter]);
                             $dds = $stmt->fetchAll();
                             if (empty($dds)): ?>
-                                <tr><td colspan="5" style="text-align: center;">No detailed sales records for this day.</td></tr>
+                                <tr><td colspan="5" style="text-align: center !important;">No detailed sales records for this day.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($dds as $index => $row): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
@@ -400,7 +400,7 @@ $daily_profit = $daily_revenue - $daily_cost;
                         </thead>
                         <tbody>
                             <?php if (empty($day_sales)): ?>
-                                <tr><td colspan="4" style="text-align: center;">No sales on this day.</td></tr>
+                                <tr><td colspan="5" style="text-align: center !important;">No sales on this day.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($day_sales as $index => $s): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
@@ -455,7 +455,7 @@ $daily_profit = $daily_revenue - $daily_cost;
                         </thead>
                         <tbody>
                             <?php if (empty($farmer_reports)): ?>
-                                <tr><td colspan="6" style="text-align: center;">No farmer records for this day.</td></tr>
+                                <tr><td colspan="6" style="text-align: center !important;">No farmer records for this day.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($farmer_reports as $index => $fr): ?>
                                     <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
