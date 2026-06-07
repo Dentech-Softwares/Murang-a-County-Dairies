@@ -226,7 +226,7 @@ async function silentRefreshAdminSales() {
         });
     } catch (e) { console.error("Sales sync failed", e); }
 }
-setInterval(silentRefreshAdminSales, 1000);
+setInterval(silentRefreshAdminSales, 30000);
 
 document.addEventListener('keyup', function(e) {
     if (e.target.classList.contains('table-filter')) {

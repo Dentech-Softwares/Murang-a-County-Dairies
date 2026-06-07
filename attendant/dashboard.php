@@ -20,7 +20,7 @@ require_once '../includes/attendant_header.php';
             document.querySelector('#activity-table .table-container').innerHTML = doc.querySelector('#activity-table .table-container').innerHTML;
         } catch (e) { console.error("Data sync failed", e); }
     }
-    setInterval(silentRefresh, 1000);
+    setInterval(silentRefresh, 30000);
 
     function toggleTable(containerId, iconId) {
         const container = document.getElementById(containerId);
@@ -46,6 +46,11 @@ if (isset($_GET['delete_type']) && isset($_GET['delete_id'])) {
     $type = $_GET['delete_type'];
     $id = $_GET['delete_id'];
     
+    // Security: CSRF Validation for deletion
+    if (!isset($_GET['token']) || $_GET['token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     if ($type == 'collection') {
         $stmt = $pdo->prepare("DELETE FROM milk_collection WHERE id = ? AND dairy_id = ?");
         $stmt->execute([$id, $dairy_id]);
@@ -209,7 +214,7 @@ $success = $_GET['success'] ?? null;
                                         <td data-label="Action">
                                             <div class="action-btns">
                                                 <a href="edit_<?php echo $act['type']; ?>.php?id=<?php echo $act['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                                <a href="?delete_type=<?php echo $act['type']; ?>&delete_id=<?php echo $act['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Delete this activity?')"><i class="fas fa-trash"></i></a>
+                                                <a href="?delete_type=<?php echo $act['type']; ?>&delete_id=<?php echo $act['id']; ?>&token=<?php echo $_SESSION['csrf_token']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Delete this activity?')"><i class="fas fa-trash"></i></a>
                                             </div>
                                         </td>
                                     </tr>

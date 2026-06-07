@@ -139,7 +139,7 @@ async function silentRefreshAdminMilk() {
         }
     } catch (e) { console.error("Milk records sync failed", e); }
 }
-setInterval(silentRefreshAdminMilk, 1000);
+setInterval(silentRefreshAdminMilk, 30000);
 
 document.getElementById('milkSummarySearch')?.addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();

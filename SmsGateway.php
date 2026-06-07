@@ -26,18 +26,21 @@ function cleanKenyanPhone($phone) {
 /**
  * Sends the formatted message payload to opensms.co.ke using your personal token
  */
-function sendDairyAlert($phone, $message) {
+function sendDairyAlert($pdo, $phone, $message) {
     $url = "https://account.opensms.co.ke/api/v3/sms/send";
     
-    // Your exact API token loaded from your dashboard
-    // 368|XP15TR7U8BikrSDkFPFkPWabYid1YjJZ7IZN9jHhf3df7eb6 (0101965519)
-    // 364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36 (0720601394)
-    $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; 
+    // Fetch configuration from database settings
+    $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key IN ('sms_api_token', 'sms_sender_id')");
+    $stmt->execute();
+    $settings = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'sms_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    $apiToken = $settings['sms_api_token'] ?? '';
+    $senderId = $settings['sms_sender_id'] ?? 'OPENSMS';
 
     $payload = array(
         "recipient" => $phone,
         "message"   => $message,
-        "sender_id" => "OPENSMS", 
+        "sender_id" => $senderId,
         "type"      => "plain"
     );
 

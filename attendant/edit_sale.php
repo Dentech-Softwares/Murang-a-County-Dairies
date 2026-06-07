@@ -33,6 +33,11 @@ $available_stock = $collected - $sold;
 $error = null;
 
 if (isset($_POST['update_sale'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $sold_to = $_POST['sold_to'];
     $quantity = $_POST['quantity'];
     $price_per_litre = $sale['price_per_litre'];
@@ -65,6 +70,7 @@ if (isset($_POST['update_sale'])) {
         <p style="color: #1976d2; margin: 0;">Available Stock: <strong><?php echo number_format($available_stock, 2); ?> Litres</strong></p>
     </div>
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group">
             <label>Sold To (Firm Name)</label>
             <input type="text" name="sold_to" value="<?php echo htmlspecialchars($sale['sold_to']); ?>" required>

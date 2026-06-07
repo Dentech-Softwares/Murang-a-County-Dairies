@@ -53,7 +53,7 @@ if (isset($_POST['record_milk'])) {
                            "Thank you.";
 
             if (!empty($farmer_data['phone'])) {
-                $response = sendDairyAlert(cleanKenyanPhone($farmer_data['phone']), $sms_message);
+                $response = sendDairyAlert($pdo, cleanKenyanPhone($farmer_data['phone']), $sms_message);
                 $resData = json_decode($response, true);
                 
                  // OpenSMS v3 returns 'status' as 'success' or an integer 200/201

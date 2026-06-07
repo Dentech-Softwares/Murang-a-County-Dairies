@@ -26,6 +26,11 @@ $error = null;
 $success = null;
 
 if (isset($_POST['update_collection'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $quantity = $_POST['quantity'];
     $price_per_litre = $collection['price_per_litre'];
     $total_price = $quantity * $price_per_litre;
@@ -49,7 +54,7 @@ if (isset($_POST['update_collection'])) {
                            "Thank you.";
 
             if (!empty($collection['phone'])) {
-                sendDairyAlert(cleanKenyanPhone($collection['phone']), $sms_message);
+                sendDairyAlert($pdo, cleanKenyanPhone($collection['phone']), $sms_message);
             }
 
             header("Location: dashboard.php?success=Collection updated successfully");
@@ -69,6 +74,7 @@ if (isset($_POST['update_collection'])) {
 
 <div class="content-card" style="text-align: left; max-width: 500px;">
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group">
             <label>Farmer</label>
             <input type="text" value="<?php echo $collection['farmer_name']; ?>" disabled style="background: #f9f9f9;">

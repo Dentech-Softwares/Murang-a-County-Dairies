@@ -23,6 +23,11 @@ $error = null;
 $success = null;
 
 if (isset($_POST['update_farmer'])) {
+    // Security: CSRF Validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $full_name = $_POST['full_name'];
     $phone = $_POST['phone'];
 
@@ -51,6 +56,7 @@ if (isset($_POST['update_farmer'])) {
 
 <div class="content-card" style="text-align: left; max-width: 500px;">
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="form-group">
             <label>Farmer Number</label>
             <input type="text" value="<?php echo $farmer['farmer_number']; ?>" disabled style="background: #f9f9f9;">

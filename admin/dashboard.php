@@ -219,7 +219,7 @@ async function silentRefreshAdminDashboard() {
         });
     }
 }
-setInterval(silentRefreshAdminDashboard, 1000);
+setInterval(silentRefreshAdminDashboard, 30000);
 
 document.getElementById('dashActivitySearch')?.addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();

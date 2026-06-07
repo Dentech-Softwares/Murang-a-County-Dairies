@@ -518,7 +518,7 @@ async function silentRefreshReports() {
         }
     } catch (e) { console.error("Admin report sync failed", e); }
 }
-setInterval(silentRefreshReports, 1000); // Sync every 1 second
+setInterval(silentRefreshReports, 30000); // Sync every 30 seconds
 
 document.addEventListener('keyup', function(e) {
     if (e.target.classList.contains('table-filter')) {

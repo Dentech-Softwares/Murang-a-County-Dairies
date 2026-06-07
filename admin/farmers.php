@@ -74,7 +74,7 @@ async function silentRefreshAdminFarmers() {
         document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
     } catch (e) { console.error("Farmer sync failed", e); }
 }
-setInterval(silentRefreshAdminFarmers, 1000);
+setInterval(silentRefreshAdminFarmers, 30000);
 
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);

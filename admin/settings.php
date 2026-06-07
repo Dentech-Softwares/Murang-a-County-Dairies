@@ -18,6 +18,19 @@ if (isset($_POST['update_prices'])) {
     $success = "Prices updated successfully!";
 }
 
+// Update SMS Settings
+if (isset($_POST['update_sms'])) {
+    $api_token = $_POST['sms_api_token'];
+    $sender_id = $_POST['sms_sender_id'];
+
+    $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = 'sms_api_token'");
+    $stmt->execute([$api_token]);
+    
+    $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = 'sms_sender_id'");
+    $stmt->execute([$sender_id]);
+    $success = "SMS Gateway settings updated!";
+}
+
 // Update Dairy Name
 if (isset($_POST['update_dairy'])) {
     $id = $_POST['dairy_id'];
@@ -84,6 +97,21 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
                 <input type="text" name="dairy_name" required>
             </div>
             <button type="submit" name="update_dairy" class="btn btn-primary">Update Name</button>
+        </form>
+    </div>
+
+    <div class="content-card" style="text-align: left;">
+        <h3>SMS Gateway Config</h3>
+        <form action="" method="POST">
+            <div class="form-group">
+                <label>OpenSMS API Token</label>
+                <input type="password" name="sms_api_token" value="<?php echo $prices['sms_api_token']; ?>" required>
+            </div>
+            <div class="form-group">
+                <label>SMS Sender ID</label>
+                <input type="text" name="sms_sender_id" value="<?php echo $prices['sms_sender_id']; ?>" required>
+            </div>
+            <button type="submit" name="update_sms" class="btn btn-primary" style="background: #673ab7;">Update Gateway</button>
         </form>
     </div>
 </div>

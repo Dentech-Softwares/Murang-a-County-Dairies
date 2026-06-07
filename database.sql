@@ -103,7 +103,9 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Initial settings
 INSERT INTO settings (setting_key, setting_value) VALUES 
 ('buying_price', '40'), -- Price per litre from farmers
-('selling_price', '60'); -- Price per litre to firms
+('selling_price', '60'), -- Price per litre to firms
+('sms_api_token', '364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36'),
+('sms_sender_id', 'OPENSMS');
 
 -- Audit Logs for commercial accountability
 CREATE TABLE IF NOT EXISTS audit_logs (

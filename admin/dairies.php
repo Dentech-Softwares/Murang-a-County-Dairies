@@ -221,7 +221,7 @@ async function silentRefreshAdminDairies() {
         }
     } catch (e) { console.error("Dairies sync failed", e); }
 }
-setInterval(silentRefreshAdminDairies, 1000);
+setInterval(silentRefreshAdminDairies, 30000);
 
 document.getElementById('dairySearch')?.addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();

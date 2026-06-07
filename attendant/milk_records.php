@@ -155,7 +155,7 @@ $service = new ReportService($pdo);
             document.querySelector('#buyer-summary-collapsible .table-container').innerHTML = doc.querySelector('#buyer-summary-collapsible .table-container').innerHTML;
         } catch (e) { console.error("Records sync failed", e); }
     }
-    setInterval(silentRefreshRecords, 1000);
+    setInterval(silentRefreshRecords, 30000);
 </script>
 
 <?php
@@ -239,6 +239,11 @@ if (isset($_GET['delete_type']) && isset($_GET['delete_id'])) {
     $type = $_GET['delete_type'];
     $id = $_GET['delete_id'];
     
+    // Security: CSRF Validation
+    if (!isset($_GET['token']) || $_GET['token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     if ($type == 'collection') {
         $stmt = $pdo->prepare("DELETE FROM milk_collection WHERE id = ? AND dairy_id = ?");
         $stmt->execute([$id, $dairy_id]);
@@ -410,7 +415,7 @@ $success = $_GET['success'] ?? null;
                         <td data-label="Actions">
                             <div class="action-btns">
                                 <a href="edit_collection.php?id=<?php echo $c['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                <a href="?delete_type=collection&delete_id=<?php echo $c['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                                <a href="?delete_type=collection&delete_id=<?php echo $c['id']; ?>&token=<?php echo $_SESSION['csrf_token']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -471,7 +476,7 @@ $success = $_GET['success'] ?? null;
                         <td data-label="Actions">
                             <div class="action-btns">
                                 <a href="edit_sale.php?id=<?php echo $s['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                <a href="?delete_type=sale&delete_id=<?php echo $s['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Delete this record?')"><i class="fas fa-trash"></i></a>
+                                <a href="?delete_type=sale&delete_id=<?php echo $s['id']; ?>&token=<?php echo $_SESSION['csrf_token']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Delete this record?')"><i class="fas fa-trash"></i></a>
                             </div>
                         </td>
                     </tr>
