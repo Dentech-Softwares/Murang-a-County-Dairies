@@ -47,13 +47,14 @@ if (isset($_POST['record_milk'])) {
 
             // 3. Prepare and Send SMS Alert
             $sms_message = "Dear " . $farmer_data['full_name'] . ", F/NO:" . $farmer_data['farmer_number'] . "\n" .
+                           "Dairy: " . $dairy_name . "\n" .
                            "Date: " . date('d-M-Y') . "\n" .
                            "Your milk collection today is " . number_format($quantity, 1) . "Ltrs.\n" .
                            "Your collection this month is " . number_format($monthly_total, 1) . "Ltrs.\n" .
                            "Thank you.";
 
             if (!empty($farmer_data['phone'])) {
-                $response = sendDairyAlert($pdo, cleanKenyanPhone($farmer_data['phone']), $sms_message);
+                $response = sendDairyAlert(cleanKenyanPhone($farmer_data['phone']), $sms_message);
                 $resData = json_decode($response, true);
                 
                  // OpenSMS v3 returns 'status' as 'success' or an integer 200/201
@@ -65,16 +66,24 @@ if (isset($_POST['record_milk'])) {
                 } else {
                     $success = "Collection recorded successfully, but the SMS alert could not be sent.";
                 }
+            } else {
+                $success = "Milk collection recorded successfully for " . htmlspecialchars($farmer_data['full_name']);
             }
         } else {
             $error = "Failed to record collection.";
         }
     }
-}
+    }
 
-$stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? ORDER BY farmer_number ASC");
-$stmt->execute([$dairy_id]);
-$farmers = $stmt->fetchAll();
+try {
+    $stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? AND status = 'active' ORDER BY farmer_number ASC");
+    $stmt->execute([$dairy_id]);
+    $farmers = $stmt->fetchAll();
+} catch (PDOException $e) {
+    // Fallback if database hasn't been updated yet
+    $farmers = [];
+    $error = "System configuration error: Missing status column. Please run database setup.";
+}
 ?>
 
 <h2>Record Milk Collection</h2>
@@ -117,7 +126,7 @@ $farmers = $stmt->fetchAll();
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="number" name="quantity" step="0.01" min="0.01" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
         </div>
         <button type="submit" name="record_milk" class="btn btn-secondary" style="width: 100%; padding: 1rem; font-weight: 600;">Record Collection</button>
     </form>

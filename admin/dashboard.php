@@ -206,27 +206,35 @@ async function silentRefreshAdminDashboard() {
             window.milkTrendsChart.data.datasets[1].data = newSales;
             window.milkTrendsChart.update('none'); // Update without animation for a real-time feel
         }
-    } catch (e) { console.error("Dashboard sync failed", e); }
 
-    // Re-apply filter
-    const filterInput = document.getElementById('dashActivitySearch');
-    if (filterInput && filterInput.value) {
-        let filter = filterInput.value.toLowerCase();
-        document.querySelectorAll('#recent-table tbody tr').forEach(row => {
-            if (row.cells.length > 1) {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            // Re-apply filter after background sync
+            const filterInput = document.getElementById('dashActivitySearch');
+            if (filterInput && filterInput.value) {
+                let filter = filterInput.value.toLowerCase();
+                document.querySelectorAll('#recent-table tbody tr').forEach(row => {
+                    if (row.cells.length > 1) { // Skip "No records" row
+                        if (filter === "") {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                        }
+                    }
+                });
             }
-        });
-    }
+        } catch (e) { console.error("Dashboard sync failed", e); }
 }
-setInterval(silentRefreshAdminDashboard, 30000);
+setInterval(silentRefreshAdminDashboard, 1500);
 
-document.getElementById('dashActivitySearch')?.addEventListener('keyup', function() {
+document.getElementById('dashActivitySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#recent-table tbody tr');
     rows.forEach(row => {
         if (row.cells.length > 1) {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

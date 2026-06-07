@@ -215,21 +215,28 @@ async function silentRefreshAdminDairies() {
             let filter = filterInput.value.toLowerCase();
             document.querySelectorAll('#dairies-list-table tbody tr').forEach(row => {
                 if (row.cells.length > 1) {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                    if (filter === "") {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    }
                 }
             });
         }
-    } catch (e) { console.error("Dairies sync failed", e); }
 }
-setInterval(silentRefreshAdminDairies, 30000);
+setInterval(silentRefreshAdminDairies, 1500);
 
-document.getElementById('dairySearch')?.addEventListener('keyup', function() {
+document.getElementById('dairySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#dairies-list-table tbody tr');
     rows.forEach(row => {
         if (row.cells.length > 1) {
             let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = text.includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

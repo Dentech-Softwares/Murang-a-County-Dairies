@@ -133,20 +133,27 @@ async function silentRefreshAdminMilk() {
             let filter = filterInput.value.toLowerCase();
             document.querySelectorAll('#milk-summary-table tbody tr').forEach(row => {
                 if (row.cells.length > 1) {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                    if (filter === "") {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    }
                 }
             });
         }
-    } catch (e) { console.error("Milk records sync failed", e); }
 }
-setInterval(silentRefreshAdminMilk, 30000);
+setInterval(silentRefreshAdminMilk, 1500);
 
-document.getElementById('milkSummarySearch')?.addEventListener('keyup', function() {
+document.getElementById('milkSummarySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#milk-summary-table tbody tr');
     rows.forEach(row => {
         if (row.cells.length > 1) {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

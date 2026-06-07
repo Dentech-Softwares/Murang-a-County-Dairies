@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS admins (
     phone VARCHAR(15) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role_id INT, -- Link to the roles table
+    role ENUM('admin', 'super_admin') DEFAULT 'admin',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS attendants (
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(15) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
     must_change_password TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (dairy_id) REFERENCES dairies(id) ON DELETE SET NULL
@@ -57,12 +58,16 @@ CREATE TABLE IF NOT EXISTS attendants (
 -- Farmers registered at a dairy
 CREATE TABLE IF NOT EXISTS farmers (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_number VARCHAR(20) UNIQUE NOT NULL,
     dairy_id INT,
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(15) UNIQUE NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (dairy_id) REFERENCES dairies(id) ON DELETE CASCADE
 );
+CREATE INDEX idx_farmer_dairy ON farmers(dairy_id);
+CREATE INDEX idx_farmer_number ON farmers(farmer_number);
 
 -- Milk collection records (from farmers)
 CREATE TABLE IF NOT EXISTS milk_collection (
@@ -75,9 +80,10 @@ CREATE TABLE IF NOT EXISTS milk_collection (
     total_price DECIMAL(10, 2) NOT NULL,
     date_collected TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (dairy_id) REFERENCES dairies(id) ON DELETE CASCADE,
-    FOREIGN KEY (farmer_id) REFERENCES farmers(id) ON DELETE CASCADE,
+    FOREIGN KEY (farmer_id) REFERENCES farmers(id) ON DELETE RESTRICT,
     FOREIGN KEY (attendant_id) REFERENCES attendants(id) ON DELETE SET NULL
 );
+CREATE INDEX idx_collection_dairy ON milk_collection(dairy_id);
 
 -- Milk sales records (to external firms)
 CREATE TABLE IF NOT EXISTS milk_sales (
@@ -103,9 +109,7 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Initial settings
 INSERT INTO settings (setting_key, setting_value) VALUES 
 ('buying_price', '40'), -- Price per litre from farmers
-('selling_price', '60'), -- Price per litre to firms
-('sms_api_token', '364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36'),
-('sms_sender_id', 'OPENSMS');
+('selling_price', '60'); -- Price per litre to firms
 
 -- Audit Logs for commercial accountability
 CREATE TABLE IF NOT EXISTS audit_logs (

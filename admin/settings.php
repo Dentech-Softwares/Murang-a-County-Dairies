@@ -18,19 +18,6 @@ if (isset($_POST['update_prices'])) {
     $success = "Prices updated successfully!";
 }
 
-// Update SMS Settings
-if (isset($_POST['update_sms'])) {
-    $api_token = $_POST['sms_api_token'];
-    $sender_id = $_POST['sms_sender_id'];
-
-    $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = 'sms_api_token'");
-    $stmt->execute([$api_token]);
-    
-    $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = 'sms_sender_id'");
-    $stmt->execute([$sender_id]);
-    $success = "SMS Gateway settings updated!";
-}
-
 // Update Dairy Name
 if (isset($_POST['update_dairy'])) {
     $id = $_POST['dairy_id'];
@@ -71,11 +58,11 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
         <form action="" method="POST">
             <div class="form-group">
                 <label>Buying Price (from Farmers) per Litre</label>
-                <input type="number" name="buying_price" value="<?php echo $prices['buying_price']; ?>" step="0.01" required>
+                <input type="number" name="buying_price" value="<?php echo $prices['buying_price'] ?? ''; ?>" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>Selling Price (to Firms) per Litre</label>
-                <input type="number" name="selling_price" value="<?php echo $prices['selling_price']; ?>" step="0.01" required>
+                <input type="number" name="selling_price" value="<?php echo $prices['selling_price'] ?? ''; ?>" step="0.01" required>
             </div>
             <button type="submit" name="update_prices" class="btn btn-primary">Update Prices</button>
         </form>
@@ -99,21 +86,6 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
             <button type="submit" name="update_dairy" class="btn btn-primary">Update Name</button>
         </form>
     </div>
-
-    <div class="content-card" style="text-align: left;">
-        <h3>SMS Gateway Config</h3>
-        <form action="" method="POST">
-            <div class="form-group">
-                <label>OpenSMS API Token</label>
-                <input type="password" name="sms_api_token" value="<?php echo $prices['sms_api_token']; ?>" required>
-            </div>
-            <div class="form-group">
-                <label>SMS Sender ID</label>
-                <input type="text" name="sms_sender_id" value="<?php echo $prices['sms_sender_id']; ?>" required>
-            </div>
-            <button type="submit" name="update_sms" class="btn btn-primary" style="background: #673ab7;">Update Gateway</button>
-        </form>
-    </div>
 </div>
 
 <div class="content-card">
@@ -122,12 +94,15 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
             <i id="as-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;">Manage Attendant Accounts</h3>
         </div>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; padding-right: 1.5rem;" onclick="event.stopPropagation()">
+            <input type="text" id="attendantAccSearch" placeholder="Filter accounts..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
+        </div>
     </div>
 
     <div id="attendant-settings-collapsible" class="collapsed" style="display: block; overflow: visible;">
     <div style="padding: 1.5rem;">
     <div class="table-container">
-        <table class="data-table">
+        <table class="data-table" id="attendantAccTable">
         <thead>
             <tr>
                 <th>Name</th>
@@ -153,5 +128,22 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
     </div>
     </div>
 </div>
+
+<script>
+document.getElementById('attendantAccSearch')?.addEventListener('input', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#attendantAccTable tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            let text = row.textContent.toLowerCase();
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = text.includes(filter) ? "table-row" : "none";
+            }
+        }
+    });
+});
+</script>
 
 <?php require_once '../includes/admin_footer.php'; ?>

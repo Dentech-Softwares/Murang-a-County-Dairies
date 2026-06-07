@@ -36,6 +36,7 @@ $farmers = $stmt->fetchAll();
                         <th>Full Name</th>
                         <th>Phone</th>
                         <th>Registered Dairy</th>
+                        <th>Status</th>
                         <th>Date Registered</th>
                     </tr>
                 </thead>
@@ -50,6 +51,11 @@ $farmers = $stmt->fetchAll();
                                 <td data-label="Full Name"><?php echo $f['full_name']; ?></td>
                                 <td data-label="Phone"><?php echo $f['phone']; ?></td>
                                 <td data-label="Registered Dairy"><?php echo $f['dairy_name']; ?></td>
+                                <td data-label="Status">
+                                    <span class="badge" style="background: <?php echo ($f['status'] ?? 'active') == 'active' ? '#e8f5e9; color: #2e7d32;' : '#ffebee; color: #c62828;'; ?>">
+                                        <?php echo ucfirst($f['status'] ?? 'active'); ?>
+                                    </span>
+                                </td>
                                 <td data-label="Date Registered"><?php echo date('Y-m-d', strtotime($f['created_at'])); ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -72,9 +78,23 @@ async function silentRefreshAdminFarmers() {
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
         document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
-    } catch (e) { console.error("Farmer sync failed", e); }
+
+        // Re-apply filter after background sync
+        const filterInput = document.getElementById('adminFarmerSearch');
+        if (filterInput && filterInput.value) {
+            let filter = filterInput.value.toLowerCase();
+            document.querySelectorAll('#adminFarmerTable tbody tr').forEach(row => {
+                if (row.cells.length > 1) { // Skip "No records" row
+                    if (filter === "") {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    }
+                }
+            });
+        }
 }
-setInterval(silentRefreshAdminFarmers, 30000);
+setInterval(silentRefreshAdminFarmers, 1500);
 
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);
@@ -85,14 +105,18 @@ function toggleTable(containerId, iconId) {
     }
 }
 
-document.getElementById('adminFarmerSearch').addEventListener('keyup', function() {
+document.getElementById('adminFarmerSearch').addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#adminFarmerTable tbody tr');
     
     rows.forEach(row => {
         if (row.cells.length > 1) { // Skip "No records" row
             let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = text.includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

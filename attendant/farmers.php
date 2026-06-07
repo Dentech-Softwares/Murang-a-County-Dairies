@@ -11,7 +11,7 @@ if (isset($_GET['export'])) {
     
     $output = fopen('php://output', 'w');
     fputcsv($output, ['Registered Farmers List']);
-    fputcsv($output, ['#', 'Farmer No.', 'Full Name', 'Phone', 'Registered On']);
+    fputcsv($output, ['#', 'Farmer No.', 'Full Name', 'Phone', 'Status', 'Registered On']);
     
     $stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? ORDER BY farmer_number ASC");
     $stmt->execute([$dairy_id]);
@@ -22,6 +22,7 @@ if (isset($_GET['export'])) {
             $row['farmer_number'] ?? 'N/A',
             $row['full_name'],
             $row['phone'],
+            ucfirst($row['status'] ?? 'active'),
             date('Y-m-d', strtotime($row['created_at']))
         ]);
     }
@@ -29,25 +30,35 @@ if (isset($_GET['export'])) {
     exit();
 }
 
-require_once '../includes/attendant_header.php';
-
 $success = '';
 $error = '';
+
+require_once '../includes/attendant_header.php';
 $dairy_id = $_SESSION['dairy_id'];
 
 // Handle Deletion
 if (isset($_GET['delete'])) {
     $delete_id = $_GET['delete'];
-    try {
-        $stmt = $pdo->prepare("DELETE FROM farmers WHERE id = ? AND dairy_id = ?");
-        $stmt->execute([$delete_id, $dairy_id]);
-        $_SESSION['success_msg'] = "Farmer deleted successfully.";
-        header("Location: farmers.php");
-        exit();
-    } catch (PDOException $e) {
-        $error = "Cannot delete farmer. They might have existing milk records.";
+    $stmt = $pdo->prepare("UPDATE farmers SET status = 'inactive' WHERE id = ? AND dairy_id = ?");
+    if ($stmt->execute([$delete_id, $dairy_id])) {
+        $_SESSION['success_msg'] = "Farmer account archived. Historical records preserved.";
     }
+    header("Location: farmers.php");
+    exit();
 }
+
+// Handle Restore
+if (isset($_GET['restore'])) {
+    $restore_id = $_GET['restore'];
+    $stmt = $pdo->prepare("UPDATE farmers SET status = 'active' WHERE id = ? AND dairy_id = ?");
+    $stmt->execute([$restore_id, $dairy_id]);
+    $_SESSION['success_msg'] = "Farmer account restored successfully.";
+    header("Location: farmers.php");
+    exit();
+}
+
+$view_archived = isset($_GET['show_archived']) && $_GET['show_archived'] == '1';
+$status_filter = $view_archived ? 'inactive' : 'active';
 
 if (isset($_POST['add_farmer'])) {
     // Security: CSRF Validation
@@ -66,16 +77,20 @@ if (isset($_POST['add_farmer'])) {
             if ($check->fetch()) {
                 $error = "A farmer with this phone number ($phone) is already registered.";
             } else {
-                // Generate unique farmer number (e.g., 001, 002)
-                // Get the count of farmers in THIS SPECIFIC dairy and add 1
-                $stmt = $pdo->prepare("SELECT COUNT(*) FROM farmers WHERE dairy_id = ?");
+                // Generate unique farmer number - use MAX to avoid duplicates if farmers were deleted
+                $stmt = $pdo->prepare("SELECT MAX(CAST(farmer_number AS UNSIGNED)) FROM farmers WHERE dairy_id = ?");
                 $stmt->execute([$dairy_id]);
-                $count = $stmt->fetchColumn() ?: 0;
-                $farmer_number = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+                $max = $stmt->fetchColumn() ?: 0;
+                $farmer_number = str_pad($max + 1, 3, '0', STR_PAD_LEFT);
 
                 $stmt = $pdo->prepare("INSERT INTO farmers (farmer_number, full_name, phone, dairy_id) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$farmer_number, $name, $phone, $dairy_id]);
                 
+                // SMS Notification for new registration
+                require_once '../SmsGateway.php';
+                $sms_message = "Welcome " . $name . " to " . $dairy_name . ". Your Farmer Number is " . $farmer_number . ". Thank you.";
+                sendDairyAlert(cleanKenyanPhone($phone), $sms_message);
+
                 // Redirect to same page with success message to prevent re-submission
                 $_SESSION['success_msg'] = "Farmer added successfully! Farmer Number: <strong>$farmer_number</strong>";
                 header("Location: farmers.php");
@@ -93,8 +108,8 @@ if (isset($_SESSION['success_msg'])) {
     unset($_SESSION['success_msg']);
 }
 
-$stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? ORDER BY farmer_number ASC");
-$stmt->execute([$dairy_id]);
+$stmt = $pdo->prepare("SELECT * FROM farmers WHERE dairy_id = ? AND status = ? ORDER BY farmer_number ASC");
+$stmt->execute([$dairy_id, $status_filter]);
 $farmers = $stmt->fetchAll();
 ?>
 
@@ -111,9 +126,24 @@ $farmers = $stmt->fetchAll();
             const html = await response.text();
             const doc = new DOMParser().parseFromString(html, 'text/html');
             document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
+
+            // Re-apply filter after background sync
+            const filterInput = document.getElementById('attendantFarmerSearch');
+            if (filterInput && filterInput.value) {
+                let filter = filterInput.value.toLowerCase();
+                document.querySelectorAll('#attendantFarmerTable tbody tr').forEach(row => {
+                    if (row.cells.length > 1) {
+                        if (filter === "") {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                        }
+                    }
+                });
+            }
         } catch (e) { console.error("Farmer sync failed", e); }
     }
-    setInterval(silentRefreshFarmers, 30000);
+    setInterval(silentRefreshFarmers, 1500);
 </script>
 
 <?php if ($success): ?>
@@ -144,9 +174,15 @@ $farmers = $stmt->fetchAll();
     <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
-            <h3 style="margin: 0;">Registered Farmers</h3>
+            <h3 style="margin: 0;"><?php echo $view_archived ? 'Archived' : 'Registered'; ?> Farmers</h3>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;" onclick="event.stopPropagation()">
+        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;" onclick="event.stopPropagation()">
+            <a href="?show_archived=<?php echo $view_archived ? '0' : '1'; ?>" class="btn" style="width: auto; background: <?php echo $view_archived ? '#2ecc71' : '#95a5a6'; ?>; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 6px;">
+                <i class="fas <?php echo $view_archived ? 'fa-users' : 'fa-archive'; ?>"></i> 
+                <?php echo $view_archived ? 'View Active' : 'View Archived'; ?>
+            </a>
+            <input type="text" id="attendantFarmerSearch" placeholder="Search farmers..." 
+                   style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
             <div style="display: flex; gap: 5px;">
                 <a href="?export=1&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
@@ -186,7 +222,11 @@ $farmers = $stmt->fetchAll();
                                 <td data-label="Actions">
                                     <div class="action-btns">
                                         <a href="edit_farmer.php?id=<?php echo $f['id']; ?>" class="btn btn-primary" title="Edit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #3498db; text-decoration: none;"><i class="fas fa-edit"></i></a>
-                                        <a href="?delete=<?php echo $f['id']; ?>" class="btn btn-primary" title="Delete" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e74c3c; text-decoration: none;" onclick="return confirm('Are you sure you want to delete this farmer?')"><i class="fas fa-trash"></i></a>
+                                        <?php if ($view_archived): ?>
+                                            <a href="?restore=<?php echo $f['id']; ?>" class="btn btn-primary" title="Restore" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #27ae60; text-decoration: none;"><i class="fas fa-undo"></i></a>
+                                        <?php else: ?>
+                                            <a href="?delete=<?php echo $f['id']; ?>" class="btn btn-primary" title="Archive" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; background: #e67e22; text-decoration: none;" onclick="return confirm('Archive this farmer? History will be preserved but they will be removed from collection lists.')"><i class="fas fa-archive"></i></a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -199,7 +239,22 @@ $farmers = $stmt->fetchAll();
 </div>
 
 <script>
-function toggleTable(containerId, iconId) {
+document.getElementById('attendantFarmerSearch')?.addEventListener('input', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#attendantFarmerTable tbody tr');
+    rows.forEach(row => {
+        if (row.cells.length > 1) {
+            let text = row.textContent.toLowerCase();
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = text.includes(filter) ? "table-row" : "none";
+            }
+        }
+    });
+});
+
+window.toggleTable = function(containerId, iconId) {
     const container = document.getElementById(containerId);
     const icon = document.getElementById(iconId);
     if (container && icon) {
@@ -208,5 +263,4 @@ function toggleTable(containerId, iconId) {
     }
 }
 </script>
-
 <?php require_once '../includes/attendant_footer.php'; ?>

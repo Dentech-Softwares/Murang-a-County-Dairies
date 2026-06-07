@@ -220,21 +220,29 @@ async function silentRefreshAdminSales() {
                 let filter = input.value.toLowerCase();
                 let tableId = input.getAttribute('data-table');
                 document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                    if (filter === "") {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    }
                 });
             }
         });
     } catch (e) { console.error("Sales sync failed", e); }
 }
-setInterval(silentRefreshAdminSales, 30000);
+    setInterval(silentRefreshAdminSales, 1500);
 
-document.addEventListener('keyup', function(e) {
+document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {
         let filter = e.target.value.toLowerCase();
         let tableId = e.target.getAttribute('data-table');
         let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
         rows.forEach(row => {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            }
         });
     }
 });

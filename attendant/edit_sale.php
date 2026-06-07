@@ -43,7 +43,9 @@ if (isset($_POST['update_sale'])) {
     $price_per_litre = $sale['price_per_litre'];
     $total_price = $quantity * $price_per_litre;
 
-    if (!empty($sold_to) && !empty($quantity)) {
+    if (empty($sold_to) || empty($quantity) || $quantity <= 0) {
+        $error = "Please enter a valid buyer and a quantity greater than zero.";
+    } else {
         if ($quantity > $available_stock) {
             $error = "Insufficient stock! Max available: " . number_format($available_stock, 2) . " L";
         } else {
@@ -77,7 +79,7 @@ if (isset($_POST['update_sale'])) {
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" value="<?php echo $sale['quantity']; ?>" max="<?php echo $available_stock; ?>" required>
+            <input type="number" name="quantity" step="0.01" min="0.01" value="<?php echo $sale['quantity']; ?>" max="<?php echo $available_stock; ?>" required>
         </div>
         <button type="submit" name="update_sale" class="btn btn-primary" style="background: var(--primary-color);">Update Sale</button>
         <a href="dashboard.php" class="btn btn-primary" style="display: block; text-align: center; margin-top: 1rem; background: #95a5a6; text-decoration: none; width: auto;">Cancel</a>

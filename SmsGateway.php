@@ -26,16 +26,15 @@ function cleanKenyanPhone($phone) {
 /**
  * Sends the formatted message payload to opensms.co.ke using your personal token
  */
-function sendDairyAlert($pdo, $phone, $message) {
+function sendDairyAlert($phone, $message) {
     $url = "https://account.opensms.co.ke/api/v3/sms/send";
     
-    // Fetch configuration from database settings
-    $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key IN ('sms_api_token', 'sms_sender_id')");
-    $stmt->execute();
-    $settings = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'sms_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
-    
-    $apiToken = $settings['sms_api_token'] ?? '';
-    $senderId = $settings['sms_sender_id'] ?? 'OPENSMS';
+    // Your exact API token loaded from your dashboard
+    // 368|XP15TR7U8BikrSDkFPFkPWabYid1YjJZ7IZN9jHhf3df7eb6 (0101965519)
+    // 364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36 (0720601394)
+    // 371|iqVQfExSnrc1PfoWqnA44ItHiYdbnhQ6Zg70z0XJ9051d58a (0790146776)
+    $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; 
+    $senderId = "OPENSMS";
 
     $payload = array(
         "recipient" => $phone,
@@ -48,11 +47,13 @@ function sendDairyAlert($pdo, $phone, $message) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1); // 1s is enough for high-speed API endpoints
-    curl_setopt($ch, CURLOPT_TIMEOUT, 3);       // Max 3s total execution
-    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); // Blazing fast DNS bypass
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+    curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 3600); // Cache DNS for 1 hour
     curl_setopt($ch, CURLOPT_TCP_NODELAY, 1); // Instant packet delivery
     curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); // Use multiplexing if supported
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(

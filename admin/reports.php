@@ -503,7 +503,13 @@ async function silentRefreshReports() {
                 let filter = input.value.toLowerCase();
                 let tableId = input.getAttribute('data-table');
                 document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                    if (row.cells.length > 1) {
+                        if (filter === "") {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                        }
+                    }
                 });
             }
         });
@@ -512,33 +518,47 @@ async function silentRefreshReports() {
             let filter = fSearch.value.toLowerCase();
             document.querySelectorAll('#farmerTable tbody tr').forEach(row => {
                 if (row.cells.length > 1) {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+                    if (filter === "") {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    }
                 }
             });
         }
     } catch (e) { console.error("Admin report sync failed", e); }
 }
-setInterval(silentRefreshReports, 30000); // Sync every 30 seconds
+setInterval(silentRefreshReports, 1500); // Sync every 1.5 seconds
 
-document.addEventListener('keyup', function(e) {
+document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {
         let filter = e.target.value.toLowerCase();
         let tableId = e.target.getAttribute('data-table');
         let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
         rows.forEach(row => {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (row.cells.length > 1) {
+                if (filter === "") {
+                    row.style.display = "";
+                } else {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                }
+            }
         });
     }
 });
 
-document.getElementById('farmerSearch').addEventListener('keyup', function() {
+document.getElementById('farmerSearch').addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#farmerTable tbody tr');
     
     rows.forEach(row => {
         if (row.cells.length > 1) { // Skip "No records" row
             let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = text.includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

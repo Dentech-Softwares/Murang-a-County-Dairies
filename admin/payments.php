@@ -73,12 +73,16 @@ $dairy_payments = $stmt->fetchAll();
 </div>
 
 <script>
-document.getElementById('revenueSearch')?.addEventListener('keyup', function() {
+document.getElementById('revenueSearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#revenue-table tbody tr');
     rows.forEach(row => {
         if (row.cells.length > 1) {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });

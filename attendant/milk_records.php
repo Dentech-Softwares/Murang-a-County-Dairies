@@ -153,9 +153,26 @@ $service = new ReportService($pdo);
             document.querySelector('#coll-collapsible .table-container').innerHTML = doc.querySelector('#coll-collapsible .table-container').innerHTML;
             document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
             document.querySelector('#buyer-summary-collapsible .table-container').innerHTML = doc.querySelector('#buyer-summary-collapsible .table-container').innerHTML;
+
+            // Re-apply filters after background sync
+            document.querySelectorAll('.table-filter').forEach(input => {
+                if (input.value) {
+                    let filter = input.value.toLowerCase();
+                    let tableId = input.getAttribute('data-table');
+                    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                        if (row.cells.length > 1) {
+                            if (filter === "") {
+                                row.style.display = "";
+                            } else {
+                                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                            }
+                        }
+                    });
+                }
+            });
         } catch (e) { console.error("Records sync failed", e); }
     }
-    setInterval(silentRefreshRecords, 30000);
+    setInterval(silentRefreshRecords, 1500);
 </script>
 
 <?php
@@ -320,6 +337,9 @@ $success = $_GET['success'] ?? null;
                 <i id="bs-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
                 <h3 style="margin: 0; font-size: 1.1rem;">Sales Summary by Buyer</h3>
             </div>
+            <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                <input type="text" class="table-filter" data-table="buyer-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                 <a href="?export=sales_summary&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
@@ -373,6 +393,9 @@ $success = $_GET['success'] ?? null;
             <div style="display: flex; align-items: center; gap: 15px;">
                 <i id="coll-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Collections History</h3>
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                <input type="text" class="table-filter" data-table="coll-history-table" placeholder="Filter collections..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
             </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                 <a href="?export=collections&date=<?php echo $date_filter; ?>&farmer_id=<?php echo $farmer_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
@@ -434,6 +457,9 @@ $success = $_GET['success'] ?? null;
             <div style="display: flex; align-items: center; gap: 15px;">
                 <i id="sales-toggle-icon" class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--primary-color); transform: rotate(0deg);"></i>
                 <h3 style="margin: 0; font-size: 1.1rem;">Milk Sales History</h3>
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                <input type="text" class="table-filter" data-table="sales-history-table" placeholder="Filter sales..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
             </div>
             <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                 <a href="?export=sales&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
@@ -507,7 +533,7 @@ $success = $_GET['success'] ?? null;
         </div>
         <div id="monthly-summary-collapsible" class="collapsed" style="overflow: visible; display: block;">
             <div class="table-container">
-                <table class="data-table" style="box-shadow: none; border-radius: 0;">
+                <table class="data-table" id="monthly-summary-table" style="box-shadow: none; border-radius: 0;">
                     <thead>
                         <tr><th>Date</th><th>Collections</th><th>Collected (L)</th><th>Sold (L)</th><th>Revenue (Kes)</th></tr>
                     </thead>
@@ -525,5 +551,24 @@ $success = $_GET['success'] ?? null;
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                if (filter === "") {
+                    row.style.display = "";
+                } else {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                }
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once '../includes/attendant_footer.php'; ?>

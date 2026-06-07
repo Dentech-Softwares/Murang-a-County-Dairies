@@ -83,7 +83,7 @@ if (isset($_POST['record_sale'])) {
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" max="<?php echo $available_stock; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="number" name="quantity" step="0.01" min="0.01" max="<?php echo $available_stock; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
             <small style="color: #888; display: block; margin-top: 5px;">Maximum allowed: <?php echo number_format($available_stock, 2); ?> L</small>
         </div>
         <button type="submit" name="record_sale" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: 600; background-color: var(--primary-color);">Record Sale</button>

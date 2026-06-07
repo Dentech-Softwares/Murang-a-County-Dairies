@@ -36,9 +36,25 @@ if (isset($_POST['update_collection'])) {
     $total_price = $quantity * $price_per_litre;
     $old_quantity = $collection['quantity'];
 
-    if (!empty($quantity)) {
-        $stmt = $pdo->prepare("UPDATE milk_collection SET quantity = ?, total_price = ? WHERE id = ? AND dairy_id = ?");
-        if ($stmt->execute([$quantity, $total_price, $id, $dairy_id])) {
+    if (empty($quantity) || $quantity <= 0) {
+        $error = "Quantity must be greater than zero.";
+    } else {
+        // Business Logic Validation: Ensure updating this doesn't result in negative stock
+        $stmt = $pdo->prepare("SELECT SUM(quantity) FROM milk_collection WHERE dairy_id = ?");
+        $stmt->execute([$dairy_id]);
+        $total_collected = $stmt->fetchColumn() ?: 0;
+
+        $stmt = $pdo->prepare("SELECT SUM(quantity) FROM milk_sales WHERE dairy_id = ?");
+        $stmt->execute([$dairy_id]);
+        $total_sold = $stmt->fetchColumn() ?: 0;
+
+        // Calculate what the stock would be AFTER this edit
+        $projected_stock = ($total_collected - $collection['quantity'] + $quantity) - $total_sold;
+
+        if ($projected_stock < 0) {
+            $error = "Update denied. Reducing this collection to " . number_format($quantity, 2) . "L would leave the dairy with negative stock (" . number_format($projected_stock, 2) . "L) because you have already sold the milk.";
+        } elseif ($stmt = $pdo->prepare("UPDATE milk_collection SET quantity = ?, total_price = ? WHERE id = ? AND dairy_id = ?")) {
+            $stmt->execute([$quantity, $total_price, $id, $dairy_id]);
             
             // Send Correction SMS
             require_once '../SmsGateway.php';
@@ -48,13 +64,14 @@ if (isset($_POST['update_collection'])) {
             $new_monthly_total = $m_stmt->fetchColumn() ?: 0;
 
             $sms_message = "CORRECTION Dear " . $collection['farmer_name'] . ", F/NO:" . $collection['farmer_number'] . "\n" .
+                           "Dairy: " . $dairy_name . "\n" .
                            "Date: " . date('d-M-Y', strtotime($collection['date_collected'])) . "\n" .
                            "Milk record updated from " . $old_quantity . "L to " . number_format($quantity, 1) . "L.\n" .
                            "New Month Total: " . number_format($new_monthly_total, 1) . "Ltrs.\n" .
                            "Thank you.";
 
             if (!empty($collection['phone'])) {
-                sendDairyAlert($pdo, cleanKenyanPhone($collection['phone']), $sms_message);
+                sendDairyAlert(cleanKenyanPhone($collection['phone']), $sms_message);
             }
 
             header("Location: dashboard.php?success=Collection updated successfully");
@@ -85,7 +102,7 @@ if (isset($_POST['update_collection'])) {
         </div>
         <div class="form-group">
             <label>Quantity (Litres)</label>
-            <input type="number" name="quantity" step="0.01" value="<?php echo $collection['quantity']; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="number" name="quantity" step="0.01" min="0.01" value="<?php echo $collection['quantity']; ?>" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
         </div>
         <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
             <button type="submit" name="update_collection" class="btn btn-secondary" style="width: 100%; padding: 1rem; font-weight: 600;">Update Collection</button>

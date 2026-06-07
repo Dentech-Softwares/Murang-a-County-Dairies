@@ -240,12 +240,16 @@ if (isset($_GET['success'])) $success = $_GET['success'];
 </div>
 
 <script>
-document.getElementById('attendantSearch')?.addEventListener('keyup', function() {
+document.getElementById('attendantSearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#attendants-list-table tbody tr');
     rows.forEach(row => {
         if (row.cells.length > 1) {
-            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            if (filter === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            }
         }
     });
 });
