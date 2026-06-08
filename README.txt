@@ -30,3 +30,7 @@ Tech Stack:
 - MySQL
 - HTML5 / CSS3
 - FontAwesome (for icons)
+
+Commercial/Legal:
+For terms of sale, privacy policies (Data Protection Act 2019), and licensing agreements
+specific to Murang'a County, see docs/LEGAL_AND_POLICIES.md.

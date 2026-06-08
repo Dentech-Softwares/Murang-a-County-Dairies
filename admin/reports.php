@@ -58,14 +58,7 @@ if (isset($_GET['export'])) {
         $detailed = $service->getMonthlyDetailedSales($date);
         $i = 1;
         foreach ($detailed as $r) {
-            fputcsv($output, [
-                $i++,
-                $r['sale_date'],
-                $r['name'],
-                $r['sold_to'],
-                number_format($r['qty'], 2),
-                number_format($r['amt'], 2)
-            ]);
+            fputcsv($output, [$i++, $r['sale_date'], $r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
         }
 
     } elseif ($type == 'daily_detailed_sales') {
@@ -499,10 +492,14 @@ $daily_profit = $daily_revenue - $daily_cost;
 /**
  * Silent background refresh for real-time Admin data
  */
+let reportsRefreshController = null;
 async function silentRefreshReports() {
     if (document.hidden) return;
+    if (reportsRefreshController) reportsRefreshController.abort();
+    reportsRefreshController = new AbortController();
+
     try {
-        const response = await fetch(window.location.href);
+        const response = await fetch(window.location.href, { signal: reportsRefreshController.signal });
         if (!response.ok) return;
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');

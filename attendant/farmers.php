@@ -127,20 +127,8 @@ $farmers = $stmt->fetchAll();
             const doc = new DOMParser().parseFromString(html, 'text/html');
             document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
 
-            // Re-apply filter after background sync
-            const filterInput = document.getElementById('attendantFarmerSearch');
-            if (filterInput && filterInput.value) {
-                let filter = filterInput.value.toLowerCase();
-                document.querySelectorAll('#attendantFarmerTable tbody tr').forEach(row => {
-                    if (row.cells.length > 1) {
-                        if (filter === "") {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                        }
-                    }
-                });
-            }
+            // Re-apply filters after background sync
+            applyTableFilters();
         } catch (e) { console.error("Farmer sync failed", e); }
     }
     setInterval(silentRefreshFarmers, 1500);
@@ -171,23 +159,24 @@ $farmers = $stmt->fetchAll();
 
 <div class="content-card" style="padding: 0; overflow: hidden;">
     <!-- Header/Dropdown Toggle -->
-    <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+    <div onclick="toggleTable('farmers-collapsible', 'farmers-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <i id="farmers-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
             <h3 style="margin: 0;"><?php echo $view_archived ? 'Archived' : 'Registered'; ?> Farmers</h3>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;" onclick="event.stopPropagation()">
-            <a href="?show_archived=<?php echo $view_archived ? '0' : '1'; ?>" class="btn" style="width: auto; background: <?php echo $view_archived ? '#2ecc71' : '#95a5a6'; ?>; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 6px;">
-                <i class="fas <?php echo $view_archived ? 'fa-users' : 'fa-archive'; ?>"></i> 
-                <?php echo $view_archived ? 'View Active' : 'View Archived'; ?>
-            </a>
-            <input type="text" id="attendantFarmerSearch" placeholder="Search farmers..." 
-                   style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
-            <div style="display: flex; gap: 5px;">
-                <a href="?export=1&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+        <div class="header-actions" style="display: flex; align-items: center; gap: 10px; justify-content: flex-end;" onclick="event.stopPropagation()">
+            <div class="search-group" style="display: flex; align-items: center; gap: 10px;">
+                <a href="?show_archived=<?php echo $view_archived ? '0' : '1'; ?>" class="btn" style="width: auto; background: <?php echo $view_archived ? '#2ecc71' : '#95a5a6'; ?>; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 6px; white-space: nowrap;">
+                    <i class="fas <?php echo $view_archived ? 'fa-users' : 'fa-archive'; ?>"></i> 
+                    <?php echo $view_archived ? 'View Active' : 'View Archived'; ?>
+                </a>
+                <input type="text" id="attendantFarmerSearch" class="table-filter" data-table="attendantFarmerTable" placeholder="Search farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 180px;">
+            </div>
+            <div class="export-buttons" style="display: flex; gap: 5px;">
+                <a href="?export=1&format=csv" class="btn btn-primary" style="padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="?export=1&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                <a href="?export=1&format=pdf" class="btn btn-primary" style="padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -239,19 +228,27 @@ $farmers = $stmt->fetchAll();
 </div>
 
 <script>
-document.getElementById('attendantFarmerSearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#attendantFarmerTable tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
+function applyTableFilters() {
+    document.querySelectorAll('.table-filter').forEach(input => {
+        let filter = input.value.toLowerCase();
+        let tableId = input.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                if (filter === "") {
+                    row.style.display = "";
+                } else {
+                    row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                }
             }
-        }
+        });
     });
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        applyTableFilters();
+    }
 });
 
 window.toggleTable = function(containerId, iconId) {

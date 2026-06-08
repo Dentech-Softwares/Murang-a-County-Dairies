@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS milk_collection (
     FOREIGN KEY (attendant_id) REFERENCES attendants(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_collection_dairy ON milk_collection(dairy_id);
+CREATE INDEX idx_collection_date ON milk_collection(date_collected);
 
 -- Milk sales records (to external firms)
 CREATE TABLE IF NOT EXISTS milk_sales (
@@ -98,6 +99,8 @@ CREATE TABLE IF NOT EXISTS milk_sales (
     FOREIGN KEY (dairy_id) REFERENCES dairies(id) ON DELETE CASCADE,
     FOREIGN KEY (attendant_id) REFERENCES attendants(id) ON DELETE SET NULL
 );
+CREATE INDEX idx_sales_dairy ON milk_sales(dairy_id);
+CREATE INDEX idx_sales_date ON milk_sales(date_sold);
 
 -- Settings for the system
 CREATE TABLE IF NOT EXISTS settings (

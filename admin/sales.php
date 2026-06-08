@@ -6,7 +6,7 @@ require_once '../includes/ReportService.php'; // Add this
 // Get today's sales
 $stmt = $pdo->query("SELECT ms.*, d.name as dairy_name, a.full_name as attendant_name
                     FROM milk_sales ms 
-                    JOIN dairies d ON ms.dairy_id = d.id 
+                    JOIN dairies d ON ms.dairy_id = d.id
                     JOIN attendants a ON ms.attendant_id = a.id
                     WHERE DATE(ms.date_sold) = CURDATE()
                     ORDER BY ms.date_sold DESC");
@@ -35,7 +35,7 @@ $stmt_month_summary->execute([$month_filter]);
 $monthly_summary_agg = $stmt_month_summary->fetchAll();
 
 // Monthly Detailed Sales
-$monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01'); // ReportService expects a full date
+$monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01');
 ?>
 
 <h2>Milk Sales Records</h2>
@@ -267,10 +267,14 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
 /**
  * Silent background refresh for real-time Sales Records
  */
+let salesRefreshController = null;
 async function silentRefreshAdminSales() {
     if (document.hidden) return;
+    if (salesRefreshController) salesRefreshController.abort();
+    salesRefreshController = new AbortController();
+
     try {
-        const response = await fetch(window.location.href);
+        const response = await fetch(window.location.href, { signal: salesRefreshController.signal });
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -293,9 +297,11 @@ async function silentRefreshAdminSales() {
                 });
             }
         });
-    } catch (e) { console.error("Sales sync failed", e); }
+    } catch (e) { 
+        if (e.name !== 'AbortError') console.error("Sales sync failed", e); 
+    }
 }
-    setInterval(silentRefreshAdminSales, 1500);
+setInterval(silentRefreshAdminSales, 2000);
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

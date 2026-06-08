@@ -6,10 +6,14 @@ require_once '../includes/attendant_header.php';
     /**
      * Silent background refresh for real-time data
      */
+    let refreshController = null;
     async function silentRefresh() {
         if (document.hidden) return;
+        if (refreshController) refreshController.abort();
+        refreshController = new AbortController();
+
         try {
-            const response = await fetch(window.location.href);
+            const response = await fetch(window.location.href, { signal: refreshController.signal });
             const html = await response.text();
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
@@ -33,9 +37,11 @@ require_once '../includes/attendant_header.php';
                     }
                 });
             }
-        } catch (e) { console.error("Data sync failed", e); }
+        } catch (e) { 
+            if (e.name !== 'AbortError') console.error("Data sync failed", e); 
+        }
     }
-    setInterval(silentRefresh, 1500);
+    setInterval(silentRefresh, 2000); // Optimized interval
 
     function toggleTable(containerId, iconId) {
         const container = document.getElementById(containerId);
@@ -104,17 +110,17 @@ $total_sold = $stmt->fetchColumn() ?: 0;
 $available_stock = $total_collected - $total_sold;
 
 // Recent Activities (Today Only)
-$stmt = $pdo->prepare("(SELECT 'collection' as type, mc.id, mc.quantity, mc.total_price, mc.date_collected as activity_date, f.full_name as detail, a.full_name as attendant_name 
+$stmt = $pdo->prepare("(SELECT 'collection' as type, mc.id, mc.quantity, mc.total_price, mc.date_collected as activity_date, f.full_name as detail, a.full_name as attendant_name, NULL as tanker_number, NULL as driver_name 
                        FROM milk_collection mc
                        LEFT JOIN farmers f ON mc.farmer_id = f.id 
                        LEFT JOIN attendants a ON mc.attendant_id = a.id
-                       WHERE mc.dairy_id = ? AND CAST(mc.date_collected AS DATE) = ?
+                       WHERE mc.dairy_id = ? AND CAST(mc.date_collected AS DATE) = ? 
                        )
                       UNION ALL
-                      (SELECT 'sale' as type, ms.id, ms.quantity, ms.total_price, ms.date_sold as activity_date, ms.sold_to as detail, a.full_name as attendant_name 
+                      (SELECT 'sale' as type, ms.id, ms.quantity, ms.total_price, ms.date_sold as activity_date, ms.sold_to as detail, a.full_name as attendant_name, ms.tanker_number, ms.driver_name 
                        FROM milk_sales ms
                        LEFT JOIN attendants a ON ms.attendant_id = a.id
-                       WHERE ms.dairy_id = ? AND CAST(ms.date_sold AS DATE) = ?
+                       WHERE ms.dairy_id = ? AND CAST(ms.date_sold AS DATE) = ? 
                        )
                       ORDER BY activity_date DESC");
 $stmt->execute([$dairy_id, $today, $dairy_id, $today]);
