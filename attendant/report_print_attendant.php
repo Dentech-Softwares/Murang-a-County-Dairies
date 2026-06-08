@@ -153,6 +153,24 @@ $dairy_name = $stmt->fetchColumn();
                 <?php endwhile; ?>
             </tbody>
         </table>
+    <?php elseif ($type == 'monthly_summary_sales'): ?>
+        <h3>Monthly Sales Summary by Buyer - <?php echo date('F Y', strtotime($date)); ?></h3>
+        <table>
+            <thead><tr><th>Buyer / Firm Name</th><th>Total Quantity (L)</th><th>Total Revenue (Kes)</th></tr></thead>
+            <tbody>
+                <?php
+                $month_val = date('Y-m', strtotime($date));
+                $query = "SELECT sold_to, SUM(quantity) as qty, SUM(total_price) as amt 
+                          FROM milk_sales 
+                          WHERE dairy_id = ? AND DATE_FORMAT(date_sold, '%Y-%m') = ?
+                          GROUP BY sold_to ORDER BY qty DESC";
+                $stmt = $pdo->prepare($query); 
+                $stmt->execute([$dairy_id, $month_val]);
+                while($r = $stmt->fetch()): ?>
+                    <tr><td><strong><?php echo htmlspecialchars($r['sold_to']); ?></strong></td><td><?php echo number_format($r['qty'], 2); ?> L</td><td>Kes <?php echo number_format($r['amt'], 2); ?></td></tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
     <?php endif; ?>
 
     <div class="footer"><p>Generated on <?php echo date('Y-m-d H:i:s'); ?> | Murang'a County Dairy Management System</p></div>

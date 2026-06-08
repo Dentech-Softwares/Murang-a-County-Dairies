@@ -11,6 +11,7 @@ if (isset($_GET['export'])) {
     $month = date('m', strtotime($date));
     $year = date('Y', strtotime($date));
     $format = $_GET['format'] ?? 'csv';
+    $dairy_id = $_GET['dairy_id'] ?? null;
 
     if ($format == 'pdf') {
         // Redirect to printable view which can be saved as PDF via browser print
@@ -125,6 +126,24 @@ if (isset($_GET['export'])) {
         $perf = $service->getMonthlyPerformanceBreakdown($date);
         foreach ($perf as $r) {
             fputcsv($output, [$r['name'], number_format($r['c_qty'], 2), number_format($r['c_amt'], 2), $r['buyers'] ?: 'N/A', number_format($r['s_qty'], 2), number_format($r['s_amt'], 2)]);
+        }
+
+    } elseif ($type == 'monthly_summary_sales') {
+        fputcsv($output, ['Monthly Sales Summary by Dairy & Buyer - ' . date('F Y', strtotime($date))]);
+        fputcsv($output, ['Dairy', 'Buyer', 'Quantity (L)', 'Amount (Kes)']);
+        $sql = "SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+                FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
+                WHERE DATE_FORMAT(ms.date_sold, '%Y-%m') = ?";
+        $params = [date('Y-m', strtotime($date))];
+        if ($dairy_id) {
+            $sql .= " AND ms.dairy_id = ?";
+            $params[] = $dairy_id;
+        }
+        $sql .= " GROUP BY d.id, ms.sold_to ORDER BY d.name ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        while($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [$r['name'], $r['sold_to'], number_format($r['qty'], 2), number_format($r['amt'], 2)]);
         }
 
         fputcsv($output, []);

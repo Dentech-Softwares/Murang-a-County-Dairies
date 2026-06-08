@@ -2,6 +2,7 @@
 require_once '../includes/db_connect.php';
 $type = $_GET['export'] ?? 'daily_summary';
 $date = $_GET['date'] ?? date('Y-m-d');
+$dairy_id = $_GET['dairy_id'] ?? null;
 $month = date('m', strtotime($date));
 $year = date('Y', strtotime($date));
 
@@ -200,6 +201,34 @@ if ($type == 'monthly') $display_date = date('F Y', strtotime($date));
                                       FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
                                       WHERE DATE(ms.date_sold) = ? GROUP BY d.id, ms.sold_to ORDER BY d.name ASC");
                 $stmt->execute([$date]);
+                while($r = $stmt->fetch()): ?>
+                    <tr>
+                        <td><strong><?php echo $r['name']; ?></strong></td>
+                        <td><?php echo $r['sold_to']; ?></td>
+                        <td><?php echo number_format($r['qty'], 2); ?></td>
+                        <td><?php echo number_format($r['amt'], 2); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+    <?php elseif ($type == 'monthly_summary_sales'): ?>
+        <h3>Monthly Sales Summary by Dairy & Buyer</h3>
+        <table>
+            <thead><tr><th>Dairy</th><th>Buyer</th><th>Quantity (L)</th><th>Amount (Kes)</th></tr></thead>
+            <tbody>
+                <?php
+                $sql = "SELECT d.name, ms.sold_to, SUM(ms.quantity) as qty, SUM(ms.total_price) as amt 
+                        FROM milk_sales ms JOIN dairies d ON ms.dairy_id = d.id 
+                        WHERE DATE_FORMAT(ms.date_sold, '%Y-%m') = ?";
+                $params = [date('Y-m', strtotime($date))];
+                if ($dairy_id) {
+                    $sql .= " AND ms.dairy_id = ?";
+                    $params[] = $dairy_id;
+                }
+                $sql .= " GROUP BY d.id, ms.sold_to ORDER BY d.name ASC";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
                 while($r = $stmt->fetch()): ?>
                     <tr>
                         <td><strong><?php echo $r['name']; ?></strong></td>

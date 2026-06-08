@@ -114,6 +114,27 @@ if (isset($_GET['export'])) {
                 number_format($row['amt'], 2)
             ]);
         }
+    } elseif ($type == 'monthly_summary_sales') {
+        $month_val = date('Y-m', strtotime($date));
+        fputcsv($output, ['Monthly Sales Summary by Buyer - ' . date('F Y', strtotime($date))]);
+        fputcsv($output, ['#', 'Buyer / Firm Name', 'Total Quantity (L)', 'Total Revenue (Kes)']);
+
+        $query = "SELECT sold_to, SUM(quantity) as qty, SUM(total_price) as amt 
+                  FROM milk_sales 
+                  WHERE dairy_id = ? AND DATE_FORMAT(date_sold, '%Y-%m') = ?
+                  GROUP BY sold_to ORDER BY qty DESC";
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$dairy_id, $month_val]);
+        $i = 1;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, [
+                $i++,
+                $row['sold_to'],
+                number_format($row['qty'], 2),
+                number_format($row['amt'], 2)
+            ]);
+        }
     } elseif ($type == 'monthly_summary') {
         fputcsv($output, ['Monthly Activity Summary - ' . date('F Y', strtotime($date))]);
         fputcsv($output, ['Date', 'Collections', 'Collected (L)', 'Sold (L)', 'Revenue (Kes)']);
@@ -151,6 +172,7 @@ $service = new ReportService($pdo);
             if (document.querySelector('.stats-grid')) document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
             if (document.querySelector('#monthly-summary-collapsible')) document.querySelector('#monthly-summary-collapsible .table-container').innerHTML = doc.querySelector('#monthly-summary-collapsible .table-container').innerHTML;
             document.querySelector('#coll-collapsible .table-container').innerHTML = doc.querySelector('#coll-collapsible .table-container').innerHTML;
+            document.querySelector('#monthly-buyer-summary-collapsible .table-container').innerHTML = doc.querySelector('#monthly-buyer-summary-collapsible .table-container').innerHTML;
             document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
             document.querySelector('#buyer-summary-collapsible .table-container').innerHTML = doc.querySelector('#buyer-summary-collapsible .table-container').innerHTML;
 
@@ -327,6 +349,66 @@ $success = $_GET['success'] ?? null;
         <i class="fas fa-calendar-day"></i>
         <h3>Selected Day Profit</h3>
         <div class="value" style="color: <?php echo $day_profit >= 0 ? 'var(--primary-color)' : '#d32f2f'; ?>;">Kes <?php echo number_format($day_profit, 0); ?></div>
+    </div>
+</div>
+
+<div class="row" style="margin-bottom: 2rem;">
+    <div class="content-card" style="padding: 0; overflow: hidden;">
+        <!-- Monthly Aggregated Summary by Buyer -->
+        <div onclick="toggleTable('monthly-buyer-summary-collapsible', 'mbs-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i id="mbs-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+                <h3 style="margin: 0; font-size: 1.1rem;">Monthly Sales Summary by Buyer</h3>
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
+                <input type="text" class="table-filter" data-table="monthly-buyer-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            </div>
+            <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
+                <a href="?export=monthly_summary_sales&date=<?php echo $date_filter; ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="?export=monthly_summary_sales&date=<?php echo $date_filter; ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+        <div id="monthly-buyer-summary-collapsible" class="collapsed" style="overflow: visible; display: block;">
+            <div class="table-container">
+                <table class="data-table" id="monthly-buyer-summary-table" style="box-shadow: none; border-radius: 0;">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Buyer / Firm Name</th>
+                            <th>Total Quantity (L)</th>
+                            <th>Total Revenue (Kes)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $month_val = date('Y-m', strtotime($date_filter));
+                        $stmt = $pdo->prepare("SELECT sold_to, SUM(quantity) as qty, SUM(total_price) as amt 
+                                              FROM milk_sales 
+                                              WHERE dairy_id = ? AND DATE_FORMAT(date_sold, '%Y-%m') = ? 
+                                              GROUP BY sold_to ORDER BY qty DESC");
+                        $stmt->execute([$dairy_id, $month_val]);
+                        $m_buyer_summary = $stmt->fetchAll();
+                        
+                        if (empty($m_buyer_summary)): ?>
+                            <tr><td colspan="4" style="text-align: center !important;">No sales summary for <?php echo date('F Y', strtotime($date_filter)); ?>.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($m_buyer_summary as $index => $bs): ?>
+                                <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
+                                    <td><?php echo $index + 1; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($bs['sold_to']); ?></strong></td>
+                                    <td><?php echo number_format($bs['qty'], 2); ?> L</td>
+                                    <td>Kes <?php echo number_format($bs['amt'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

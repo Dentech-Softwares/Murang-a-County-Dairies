@@ -21,9 +21,20 @@ $stmt_summary = $pdo->query("SELECT d.name as dairy_name, ms.sold_to, SUM(ms.qua
                             ORDER BY d.name ASC");
 $daily_summary = $stmt_summary->fetchAll();
 
-// Monthly Sales by Dairy & Buyer
 $service = new ReportService($pdo); // Add this
 $month_filter = $_GET['month_filter'] ?? date('Y-m'); // Default to current month
+
+// Monthly Sales Summary by Dairy & Buyer (Aggregated)
+$stmt_month_summary = $pdo->prepare("SELECT d.name as dairy_name, ms.sold_to, SUM(ms.quantity) as total_qty, SUM(ms.total_price) as total_amt
+                                    FROM milk_sales ms 
+                                    JOIN dairies d ON ms.dairy_id = d.id 
+                                    WHERE DATE_FORMAT(ms.date_sold, '%Y-%m') = ?
+                                    GROUP BY ms.dairy_id, ms.sold_to
+                                    ORDER BY d.name ASC");
+$stmt_month_summary->execute([$month_filter]);
+$monthly_summary_agg = $stmt_month_summary->fetchAll();
+
+// Monthly Detailed Sales
 $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01'); // ReportService expects a full date
 ?>
 
@@ -98,10 +109,10 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
         <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
             <input type="text" class="table-filter" data-table="daily-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
             <div style="display: flex; gap: 5px;">
-                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_detailed_sales&date=<?php echo date('Y-m-d'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
                 </a>
-                <a href="../admin/reports.php?export=daily_summary_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                <a href="../admin/reports.php?export=daily_detailed_sales&date=<?php echo date('Y-m-d'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -126,6 +137,59 @@ $monthly_detailed_sales = $service->getMonthlyDetailedSales($month_filter . '-01
                         <tr><td colspan="5" style="text-align: center !important;">No sales summary for today.</td></tr>
                     <?php else: ?>
                         <?php foreach ($daily_summary as $index => $s): ?>
+                            <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
+                                <td data-label="S/N"><?php echo $index + 1; ?></td>
+                                <td data-label="Dairy"><strong><?php echo htmlspecialchars($s['dairy_name']); ?></strong></td>
+                                <td data-label="Buyer"><?php echo htmlspecialchars($s['sold_to']); ?></td>
+                                <td data-label="Quantity (L)"><?php echo number_format($s['total_qty'], 2); ?></td>
+                                <td data-label="Total Amount (Kes)"><strong><?php echo number_format($s['total_amt'], 2); ?></strong></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="content-card" style="margin-top: 2rem; padding: 0; overflow: hidden;">
+    <!-- Header/Dropdown Toggle for Monthly Aggregated Summary -->
+    <div onclick="toggleTable('monthly-summary-agg-collapsible', 'monthly-summary-agg-toggle-icon')" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; cursor: pointer; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i id="monthly-summary-agg-toggle-icon" class="fas fa-chevron-right" style="transition: transform 0.3s; color: var(--primary-color);"></i>
+            <h3 style="margin: 0; font-size: 1.1rem;">Monthly Sales Summary by Dairy & Buyer</h3>
+        </div>
+        <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
+            <input type="text" class="table-filter" data-table="monthly-summary-agg-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            <div style="display: flex; gap: 5px;">
+                <a href="../admin/reports.php?export=monthly_summary_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-excel"></i> CSV
+                </a>
+                <a href="../admin/reports.php?export=monthly_summary_sales&date=<?php echo urlencode($month_filter . '-01'); ?>&format=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Content (Collapsible) -->
+    <div id="monthly-summary-agg-collapsible" class="collapsed" style="display: block; overflow: visible;">
+        <div class="table-container">
+            <table class="data-table" id="monthly-summary-agg-table" style="box-shadow: none; border-radius: 0;">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Dairy</th>
+                        <th>Buyer</th>
+                        <th>Quantity (L)</th>
+                        <th>Total Amount (Kes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($monthly_summary_agg)): ?>
+                        <tr><td colspan="5" style="text-align: center !important;">No sales summary for <?php echo date('F Y', strtotime($month_filter)); ?>.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($monthly_summary_agg as $index => $s): ?>
                             <tr class="<?php echo $index >= 5 ? 'extra-row' : ''; ?>">
                                 <td data-label="S/N"><?php echo $index + 1; ?></td>
                                 <td data-label="Dairy"><strong><?php echo htmlspecialchars($s['dairy_name']); ?></strong></td>
@@ -212,6 +276,7 @@ async function silentRefreshAdminSales() {
 
         document.querySelector('#sales-collapsible .table-container').innerHTML = doc.querySelector('#sales-collapsible .table-container').innerHTML;
         document.querySelector('#daily-summary-collapsible .table-container').innerHTML = doc.querySelector('#daily-summary-collapsible .table-container').innerHTML;
+        document.querySelector('#monthly-summary-agg-collapsible .table-container').innerHTML = doc.querySelector('#monthly-summary-agg-collapsible .table-container').innerHTML;
         document.querySelector('#monthly-sales-collapsible .table-container').innerHTML = doc.querySelector('#monthly-sales-collapsible .table-container').innerHTML;
 
         // Re-apply filters
