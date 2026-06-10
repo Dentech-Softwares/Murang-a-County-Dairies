@@ -1,4 +1,5 @@
 <?php
+
 // Updated with your live InfinityFree MySQL Hostname
 $host = 'sql200.infinityfree.com'; 
 $username = 'if0_42147876';

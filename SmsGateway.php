@@ -49,8 +49,8 @@ function sendDairyAlert($phone, $message) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // Reduced from 5
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);        // Reduced from 10
     curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 3600); // Cache DNS for 1 hour

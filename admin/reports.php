@@ -544,7 +544,7 @@ async function silentRefreshReports() {
         }
     } catch (e) { console.error("Admin report sync failed", e); }
 }
-setInterval(silentRefreshReports, 2000); // Standardized to 2 seconds
+setInterval(silentRefreshReports, 30000); // Changed to 30 seconds to reduce server load
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {
