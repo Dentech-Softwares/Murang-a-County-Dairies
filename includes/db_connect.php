@@ -1,8 +1,8 @@
 <?php
-$host = '127.0.0.1'; // Using IP is more reliable in XAMPP environment
-$dbname = 'muranga_dairy';
-$username = 'root';
-$password = '';
+$host = 'if0_42147876_muranga_dairy'; // Replace with your MySQL Hostname from InfinityFree panel
+$dbname = 'if0_42147876_muranga_dairy'; // Replace with the database name created in the panel
+$username = 'if0_42147876';
+$password = '0720601394DKn';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);

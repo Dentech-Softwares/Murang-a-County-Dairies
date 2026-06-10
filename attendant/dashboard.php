@@ -110,14 +110,14 @@ $total_sold = $stmt->fetchColumn() ?: 0;
 $available_stock = $total_collected - $total_sold;
 
 // Recent Activities (Today Only)
-$stmt = $pdo->prepare("(SELECT 'collection' as type, mc.id, mc.quantity, mc.total_price, mc.date_collected as activity_date, f.full_name as detail, a.full_name as attendant_name, NULL as tanker_number, NULL as driver_name 
+$stmt = $pdo->prepare("(SELECT 'collection' as type, mc.id, mc.quantity, mc.total_price, mc.date_collected as activity_date, f.full_name as detail, a.full_name as attendant_name 
                        FROM milk_collection mc
                        LEFT JOIN farmers f ON mc.farmer_id = f.id 
                        LEFT JOIN attendants a ON mc.attendant_id = a.id
                        WHERE mc.dairy_id = ? AND CAST(mc.date_collected AS DATE) = ? 
                        )
                       UNION ALL
-                      (SELECT 'sale' as type, ms.id, ms.quantity, ms.total_price, ms.date_sold as activity_date, ms.sold_to as detail, a.full_name as attendant_name, ms.tanker_number, ms.driver_name 
+                      (SELECT 'sale' as type, ms.id, ms.quantity, ms.total_price, ms.date_sold as activity_date, ms.sold_to as detail, a.full_name as attendant_name 
                        FROM milk_sales ms
                        LEFT JOIN attendants a ON ms.attendant_id = a.id
                        WHERE ms.dairy_id = ? AND CAST(ms.date_sold AS DATE) = ? 

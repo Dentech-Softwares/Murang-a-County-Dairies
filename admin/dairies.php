@@ -224,7 +224,7 @@ async function silentRefreshAdminDairies() {
             });
         }
 }
-setInterval(silentRefreshAdminDairies, 1500);
+setInterval(silentRefreshAdminDairies, 2000); // Standardized to 2 seconds
 
 document.getElementById('dairySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();

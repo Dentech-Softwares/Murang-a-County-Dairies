@@ -1,8 +1,8 @@
 <?php
-$host = '127.0.0.1'; // Using IP is often more reliable than 'localhost'
-$username = 'root';
-$password = '';
-$dbname = 'muranga_dairy';
+$host = 'sqlXXX.infinityfree.com'; // Replace with your MySQL Hostname from InfinityFree panel
+$username = 'if0_42147876';
+$password = '0720601394DKn';
+$dbname = 'if0_42147876_muranga_dairy'; // Replace with the database name created in the panel
 
 try {
     echo "<h1>Database Setup Wizard</h1>";
@@ -11,11 +11,6 @@ try {
     echo "Connecting to MySQL server... ";
     $pdo = new PDO("mysql:host=$host", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "<span style='color: green;'>DONE</span><br>";
-
-    // 2. Create Database
-    echo "Creating database '$dbname'... ";
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS $dbname");
     echo "<span style='color: green;'>DONE</span><br>";
 
     // 3. Select Database
@@ -54,6 +49,6 @@ try {
 } catch (Exception $e) {
     echo "<h2 style='color: red;'>Setup Failed!</h2>";
     echo "<p>Error: " . $e->getMessage() . "</p>";
-    echo "<p>Please ensure XAMPP (MySQL) is running and your credentials in <code>setup.php</code> are correct.</p>";
+    echo "<p>Please ensure you have created the database <code>$dbname</code> in your InfinityFree Control Panel first.</p>";
 }
 ?>

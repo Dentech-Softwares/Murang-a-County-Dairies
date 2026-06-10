@@ -131,7 +131,7 @@ $farmers = $stmt->fetchAll();
             applyTableFilters();
         } catch (e) { console.error("Farmer sync failed", e); }
     }
-    setInterval(silentRefreshFarmers, 1500);
+    setInterval(silentRefreshFarmers, 2000); // Standardized to 2 seconds
 </script>
 
 <?php if ($success): ?>

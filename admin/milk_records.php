@@ -142,7 +142,7 @@ async function silentRefreshAdminMilk() {
             });
         }
 }
-setInterval(silentRefreshAdminMilk, 1500);
+setInterval(silentRefreshAdminMilk, 2000); // Standardized to 2 seconds
 
 document.getElementById('milkSummarySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();

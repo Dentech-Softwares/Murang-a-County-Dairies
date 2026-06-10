@@ -223,7 +223,7 @@ async function silentRefreshAdminDashboard() {
             }
         } catch (e) { console.error("Dashboard sync failed", e); }
 }
-setInterval(silentRefreshAdminDashboard, 1500);
+setInterval(silentRefreshAdminDashboard, 2000); // Standardized to 2 seconds
 
 document.getElementById('dashActivitySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();
