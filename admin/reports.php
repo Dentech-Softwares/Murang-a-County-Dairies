@@ -153,9 +153,6 @@ if (isset($_GET['export'])) {
 
 require_once '../includes/admin_header.php';
 
-// Force local timezone to match database for "Today" queries
-date_default_timezone_set('Africa/Nairobi');
-
 // Initialize date_filter to today's date
 $date_filter = date('Y-m-d');
 
