@@ -94,7 +94,7 @@ async function silentRefreshAdminFarmers() {
             });
         }
 }
-setInterval(silentRefreshAdminFarmers, 1500);
+setInterval(silentRefreshAdminFarmers, 2000); // Standardized to 2 seconds
 
 function toggleTable(containerId, iconId) {
     const container = document.getElementById(containerId);

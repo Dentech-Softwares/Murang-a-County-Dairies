@@ -20,8 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $stmt = $pdo->prepare("UPDATE admins SET reset_token = ?, reset_expires = ? WHERE id = ?");
             if ($stmt->execute([$token, $expires, $admin['id']])) {
-                // Build reset link. In production, use your actual domain name and HTTPS.
-                $reset_link = "http://localhost/muranga_dairy/admin/reset_password.php?token=$token&email=" . urlencode($admin['email']);
+                // Automatically detect the current domain for the reset link
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+                
+                $reset_link = $base_url . "/reset_password.php?token=$token&email=" . urlencode($admin['email']);
                 
                 $message = "Hello " . explode(' ', $admin['full_name'])[0] . ",\n" .
                            "Click the link to reset your Murang'a Dairy Admin password: $reset_link\n" .
