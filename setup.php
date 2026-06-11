@@ -22,8 +22,8 @@ try {
     echo "<h1>Database Setup Wizard</h1>";
     
     // 1. Connect to MySQL
-    echo "Connecting to MySQL server... ";
-    $pdo = new PDO("mysql:host=$host", $username, $password);
+    echo "Connecting to MySQL server (Host: $host, Port: $port)... ";
+    $pdo = new PDO("mysql:host=$host;port=$port", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "<span style='color: green;'>DONE</span><br>";
 

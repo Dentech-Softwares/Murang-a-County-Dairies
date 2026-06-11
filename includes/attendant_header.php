@@ -461,6 +461,7 @@ function getInitials($name) {
                 <li><a href="farmers.php" class="<?php echo $current_page == 'farmers.php' ? 'active' : ''; ?>"><i class="fas fa-users"></i> Farmers</a></li>
                 <li><a href="record_milk.php" class="<?php echo $current_page == 'record_milk.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-water"></i> Record Collection</a></li>
                 <li><a href="sell_milk.php" class="<?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>"><i class="fas fa-truck-loading"></i> Sell Milk</a></li>
+                <li><a href="farmer_ledger.php" class="<?php echo $current_page == 'farmer_ledger.php' ? 'active' : ''; ?>"><i class="fas fa-book"></i> Farmer Ledger</a></li>
                 <li><a href="milk_records.php" class="<?php echo $current_page == 'milk_records.php' ? 'active' : ''; ?>"><i class="fas fa-list"></i> History</a></li>
             </ul>
         </div>
@@ -479,6 +480,10 @@ function getInitials($name) {
                 <div class="fab-item">
                     <i class="fas fa-plus"></i>
                 </div>
+            </a>
+            <a href="farmer_ledger.php" class="nav-item <?php echo $current_page == 'farmer_ledger.php' ? 'active' : ''; ?>">
+                <i class="fas fa-book"></i>
+                <span>Ledger</span>
             </a>
             <a href="sell_milk.php" class="nav-item <?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>">
                 <i class="fas fa-truck"></i>
