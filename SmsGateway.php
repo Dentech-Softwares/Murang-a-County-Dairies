@@ -33,8 +33,8 @@ function sendDairyAlert($phone, $message) {
     // 368|XP15TR7U8BikrSDkFPFkPWabYid1YjJZ7IZN9jHhf3df7eb6 (0101965519)
     // 364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36 (0720601394)
     // 371|iqVQfExSnrc1PfoWqnA44ItHiYdbnhQ6Zg70z0XJ9051d58a (0790146776)
-    $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; 
-    $senderId = "OPENSMS";
+    $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; // Verify balance for this specific token
+    $senderId = "OPENSMS"; // Verify if this Sender ID is approved in your dashboard
 
     $payload = array(
         "recipient" => $phone,
@@ -49,13 +49,11 @@ function sendDairyAlert($phone, $message) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // Reduced from 5
-    curl_setopt($ch, CURLOPT_TIMEOUT, 3);        // Reduced from 10
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // Standard connection timeout
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);        // Allow up to 30s for the gateway to respond
     curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 3600); // Cache DNS for 1 hour
     curl_setopt($ch, CURLOPT_TCP_NODELAY, 1); // Instant packet delivery
-    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); // Use multiplexing if supported
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         "Authorization: Bearer " . $apiToken,
         "Content-Type: application/json",
@@ -67,14 +65,19 @@ function sendDairyAlert($phone, $message) {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+    // Create a local log to see exactly what the SMS provider says
+    $logMsg = date('Y-m-d H:i:s') . " | To: $phone | HTTP: $httpCode | Response: $response" . PHP_EOL;
+    file_put_contents(__DIR__ . '/sms_debug.log', $logMsg, FILE_APPEND);
+
     if (curl_errno($ch)) {
         $error_msg = curl_error($ch);
         curl_close($ch);
         return json_encode(['status' => 'error', 'message' => $error_msg]);
     }
     
-    if ($httpCode >= 400) {
-        return json_encode(['status' => 'error', 'message' => "HTTP $httpCode: " . $response]);
+    if ($httpCode >= 400 || empty($response)) {
+        curl_close($ch);
+        return json_encode(['status' => 'error', 'message' => "Gateway Error (HTTP $httpCode)"]);
     }
 
     curl_close($ch);

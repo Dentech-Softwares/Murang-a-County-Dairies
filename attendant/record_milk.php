@@ -46,25 +46,25 @@ if (isset($_POST['record_milk'])) {
             $monthly_total = $farmer_data['monthly_total'] ?: 0;
 
             // 3. Prepare and Send SMS Alert
-            $sms_message = "Dear " . $farmer_data['full_name'] . ", F/NO:" . $farmer_data['farmer_number'] . "\n" .
+            $sms_message = "Dear " . $farmer_data['full_name'] . ". F/NO: " . $farmer_data['farmer_number'] . "\n" .
                            "Dairy: " . $dairy_name . "\n" .
-                           "Date: " . date('d-M-Y') . "\n" .
-                           "Your milk collection today is " . number_format($quantity, 1) . "Ltrs.\n" .
-                           "Your collection this month is " . number_format($monthly_total, 1) . "Ltrs.\n" .
-                           "Thank you.";
+                           "Date:" . date('d-M-Y H:i') . "\n" .
+                           "Your milk collection today is " . number_format($quantity, 1) . "Ltrs\n" .
+                           "Your collection this month is " . number_format($monthly_total, 1) . " Ltrs\n" .
+                           "Thank you";
 
             if (!empty($farmer_data['phone'])) {
                 $response = sendDairyAlert(cleanKenyanPhone($farmer_data['phone']), $sms_message);
                 $resData = json_decode($response, true);
                 
                  // OpenSMS v3 returns 'status' as 'success' or an integer 200/201
-                $isSuccess = isset($resData['status']) && 
-                             (strtolower($resData['status']) === 'success' || $resData['status'] == 200 || $resData['status'] == 201);
+                $resStatus = isset($resData['status']) ? (string)$resData['status'] : '';
+                $isSuccess = (strtolower($resStatus) === 'success' || $resStatus === '200' || $resStatus === '201');
 
                 if ($isSuccess) {
                     $success = "Milk collection recorded and SMS sent to " . htmlspecialchars($farmer_data['full_name']);
                 } else {
-                    $success = "Collection recorded successfully, but the SMS alert could not be sent.";
+                    $success = "Collection recorded successfully, but sms not sent.";
                 }
             } else {
                 $success = "Milk collection recorded successfully for " . htmlspecialchars($farmer_data['full_name']);

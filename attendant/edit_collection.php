@@ -63,18 +63,28 @@ if (isset($_POST['update_collection'])) {
             $m_stmt->execute([$collection['farmer_id'], $collection['date_collected'], $collection['date_collected']]);
             $new_monthly_total = $m_stmt->fetchColumn() ?: 0;
 
-            $sms_message = "CORRECTION Dear " . $collection['farmer_name'] . ", F/NO:" . $collection['farmer_number'] . "\n" .
+            $sms_message = "REVISED RECORD: Dear " . $collection['farmer_name'] . ". F/NO: " . $collection['farmer_number'] . "\n" .
                            "Dairy: " . $dairy_name . "\n" .
-                           "Date: " . date('d-M-Y', strtotime($collection['date_collected'])) . "\n" .
-                           "Milk record updated from " . $old_quantity . "L to " . number_format($quantity, 1) . "L.\n" .
-                           "New Month Total: " . number_format($new_monthly_total, 1) . "Ltrs.\n" .
-                           "Thank you.";
+                           "Date: " . date('d-M-Y H:i', strtotime($collection['date_collected'])) . "\n" .
+                           "Your collection has been corrected from " . number_format($old_quantity, 1) . "L to " . number_format($quantity, 1) . "L.\n" .
+                           "Updated Month Total: " . number_format($new_monthly_total, 1) . " Ltrs\n" .
+                           "Apologies for the error.";
 
+            $sms_sent = true;
             if (!empty($collection['phone'])) {
-                sendDairyAlert(cleanKenyanPhone($collection['phone']), $sms_message);
+                $response = sendDairyAlert(cleanKenyanPhone($collection['phone']), $sms_message);
+                $resData = json_decode($response, true);
+                $resStatus = isset($resData['status']) ? (string)$resData['status'] : '';
+                $sms_sent = (strtolower($resStatus) === 'success' || $resStatus === '200' || $resStatus === '201');
             }
 
-            header("Location: dashboard.php?success=Collection updated successfully");
+            if ($sms_sent) {
+                $msg = "Collection updated and correction SMS sent to " . htmlspecialchars($collection['farmer_name']);
+            } else {
+                $msg = "Collection updated successfully, but sms not sent.";
+            }
+
+            header("Location: dashboard.php?success=" . urlencode($msg));
             exit();
         } else {
             $error = "Failed to update collection.";

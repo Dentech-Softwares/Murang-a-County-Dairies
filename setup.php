@@ -1,10 +1,20 @@
 <?php
 
-// Updated with your live InfinityFree MySQL Hostname
-$host = 'sql200.infinityfree.com'; 
-$username = 'if0_42147876';
-$password = '0720601394DKn';
-$dbname = 'if0_42147876_muranga_dairy'; // Replace with the database name created in the panel
+// Database configuration for local XAMPP setup
+$host = 'localhost'; 
+$username = 'root';
+$password = '';
+$dbname = 'muranga_dairy'; 
+// Database configuration for local XAMPP setup
+//$host = 'localhost'; 
+//$username = 'root';
+//$password = '';
+//$dbname = 'muranga_dairy'; 
+// Database configuration for local XAMPP setup
+// $host = 'localhost'; 
+//$username = 'root';
+//$password = '';
+//$dbname = 'muranga_dairy'; 
 
 try {
     echo "<h1>Database Setup Wizard</h1>";

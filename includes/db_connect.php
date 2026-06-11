@@ -1,9 +1,9 @@
 <?php
-// Updated with your live InfinityFree MySQL Hostname
-$host = 'sql200.infinityfree.com'; 
-$dbname = 'if0_42147876_muranga_dairy'; // Replace with the database name created in the panel
-$username = 'if0_42147876';
-$password = '0720601394DKn';
+// Database configuration for local XAMPP development
+$host = 'localhost'; 
+$dbname = 'muranga_dairy'; 
+$username = 'root';
+$password = ''; // Default XAMPP password is empty
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
