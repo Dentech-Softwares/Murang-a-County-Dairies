@@ -1,20 +1,22 @@
 <?php
-
-// Database configuration for local XAMPP setup
-$host = 'localhost'; 
-$username = 'root';
-$password = '';
-$dbname = 'muranga_dairy'; 
+// Database configuration for InfinityFree hosting
+$host = 'sql200.infinityfree.com'; 
+$username = 'if0_42147876';
+$password = '0720601394DKn';
+$dbname = 'if0_42147876_muranga_dairy'; 
+$port = '3306';
 // Database configuration for local XAMPP setup
 //$host = 'localhost'; 
 //$username = 'root';
 //$password = '';
 //$dbname = 'muranga_dairy'; 
-// Database configuration for local XAMPP setup
-// $host = 'localhost'; 
-//$username = 'root';
-//$password = '';
-//$dbname = 'muranga_dairy'; 
+ 
+// Database configuration for InfinityFree hosting
+//$host = 'sql200.infinityfree.com'; 
+//$username = 'if0_42147876';
+//$password = '0720601394DKn';
+//$dbname = 'if0_42147876_muranga_dairy'; 
+//$port = '3306';
 
 try {
     echo "<h1>Database Setup Wizard</h1>";
