@@ -481,10 +481,6 @@ function getInitials($name) {
                     <i class="fas fa-plus"></i>
                 </div>
             </a>
-            <a href="farmer_ledger.php" class="nav-item <?php echo $current_page == 'farmer_ledger.php' ? 'active' : ''; ?>">
-                <i class="fas fa-book"></i>
-                <span>Ledger</span>
-            </a>
             <a href="sell_milk.php" class="nav-item <?php echo $current_page == 'sell_milk.php' ? 'active' : ''; ?>">
                 <i class="fas fa-truck"></i>
                 <span>Sales</span>
