@@ -123,26 +123,24 @@ async function silentRefreshAdminMilk() {
         const response = await fetch(window.location.href);
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
-
-        document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
-        document.querySelector('#milk-collapsible .table-container').innerHTML = doc.querySelector('#milk-collapsible .table-container').innerHTML;
+        
+        const newStats = doc.querySelector('.stats-grid');
+        const newTable = doc.querySelector('#milk-collapsible .table-container');
+        
+        if (newStats) document.querySelector('.stats-grid').innerHTML = newStats.innerHTML;
+        if (newTable) document.querySelector('#milk-collapsible .table-container').innerHTML = newTable.innerHTML;
 
         // Re-apply filter
         const filterInput = document.getElementById('milkSummarySearch');
         if (filterInput && filterInput.value) {
             let filter = filterInput.value.toLowerCase();
             document.querySelectorAll('#milk-summary-table tbody tr').forEach(row => {
-                if (row.cells.length > 1) {
-                    if (filter === "") {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                    }
-                }
+                row.style.display = row.cells.length > 1 && row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
             });
         }
+    } catch (e) { console.error("Milk records sync failed:", e); }
 }
-setInterval(silentRefreshAdminMilk, 2000); // Standardized to 2 seconds
+setInterval(silentRefreshAdminMilk, 1000); // Updated to 1 second for real-time updates
 
 document.getElementById('milkSummarySearch')?.addEventListener('input', function() {
     let filter = this.value.toLowerCase();

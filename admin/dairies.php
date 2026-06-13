@@ -207,22 +207,18 @@ async function silentRefreshAdminDairies() {
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
         const container = document.querySelector('#dairies-collapsible .table-container');
-        if (container) container.innerHTML = doc.querySelector('#dairies-collapsible .table-container').innerHTML;
+        const newContainer = doc.querySelector('#dairies-collapsible .table-container');
+        if (container && newContainer) container.innerHTML = newContainer.innerHTML;
 
         // Re-apply filter
         const filterInput = document.getElementById('dairySearch');
         if (filterInput && filterInput.value) {
             let filter = filterInput.value.toLowerCase();
             document.querySelectorAll('#dairies-list-table tbody tr').forEach(row => {
-                if (row.cells.length > 1) {
-                    if (filter === "") {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                    }
-                }
+                row.style.display = row.cells.length > 1 && row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
             });
         }
+    } catch (e) { console.error("Dairy sync failed:", e); }
 }
 setInterval(silentRefreshAdminDairies, 2000); // Standardized to 2 seconds
 
