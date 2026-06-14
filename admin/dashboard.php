@@ -60,7 +60,7 @@ for ($i = 6; $i >= 0; $i--) {
 ?>
 
 <!-- Add Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../assets/js/chart.js"></script>
 
 <h2>Dashboard Overview</h2>
 

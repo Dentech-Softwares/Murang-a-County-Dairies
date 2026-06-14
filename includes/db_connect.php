@@ -1,14 +1,14 @@
 <?php
 // Database configuration for InfinityFree hosting
-//$host = 'localhost'; 
-//$username = 'root';
-//$password = '';
-//$dbname = 'muranga_dairy'; 
+$host = 'localhost'; 
+$username = 'root';
+$password = '';
+$dbname = 'muranga_dairy'; 
 
-$host = 'sql200.infinityfree.com'; 
-$dbname = 'if0_42147876_muranga_dairy'; 
-$username = 'if0_42147876';
-$password = '0720601394DKn';
+//$host = 'sql200.infinityfree.com'; 
+//$dbname = 'if0_42147876_muranga_dairy'; 
+//$username = 'if0_42147876';
+//$password = '0720601394DKn';
 $port = '3306';
 
 try {

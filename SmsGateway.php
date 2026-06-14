@@ -33,7 +33,7 @@ function sendDairyAlert($phone, $message) {
     // 368|XP15TR7U8BikrSDkFPFkPWabYid1YjJZ7IZN9jHhf3df7eb6 (0101965519)
     // 364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36 (0720601394)
     // 371|iqVQfExSnrc1PfoWqnA44ItHiYdbnhQ6Zg70z0XJ9051d58a (0790146776)
-    $apiToken = "364|RZhtRx1OcagcMR9tU1GLgWzX4aXXeKMsaVDsVzbf1d94cf36"; // Verify balance for this specific token
+    $apiToken = "371|iqVQfExSnrc1PfoWqnA44ItHiYdbnhQ6Zg70z0XJ9051d58a"; // Verify balance for this specific token
     $senderId = "OPENSMS"; // Verify if this Sender ID is approved in your dashboard
 
     $payload = array(
