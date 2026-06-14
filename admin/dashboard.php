@@ -99,9 +99,9 @@ for ($i = 6; $i >= 0; $i--) {
 
 <!-- Hidden container to store chart data for silent refresh -->
 <div id="chart-data-refresh" style="display:none;" 
-     data-labels='<?php echo h(json_encode($chart_labels)); ?>'
-     data-collections='<?php echo h(json_encode($chart_collections)); ?>'
-     data-sales='<?php echo h(json_encode($chart_sales)); ?>'>
+     data-labels="<?php echo htmlspecialchars(json_encode($chart_labels), ENT_QUOTES); ?>"
+     data-collections="<?php echo htmlspecialchars(json_encode($chart_collections), ENT_QUOTES); ?>"
+     data-sales="<?php echo htmlspecialchars(json_encode($chart_sales), ENT_QUOTES); ?>">
 </div>
 
 <div class="row" style="margin-top: 2rem;">
@@ -205,35 +205,44 @@ async function silentRefreshAdminDashboard() {
         }
 
             // Re-apply filter after background sync
-            const filterInput = document.getElementById('dashActivitySearch');
-            if (filterInput && filterInput.value) {
-                let filter = filterInput.value.toLowerCase();
-                document.querySelectorAll('#recent-table tbody tr').forEach(row => {
-                    if (row.cells.length > 1) { // Skip "No records" row
-                        if (filter === "") {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            document.querySelectorAll('.table-filter').forEach(input => {
+                if (input.value) {
+                    let filter = input.value.toLowerCase();
+                    let tableId = input.getAttribute('data-table');
+                    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                        if (row.cells.length > 1) {
+                            if (filter === "") {
+                                row.style.display = "";
+                            } else {
+                                let isMatch = Array.from(row.cells).some(cell => {
+                                    let text = cell.textContent.toLowerCase().trim();
+                                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                                });
+                                row.style.display = isMatch ? "table-row" : "none";
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         } catch (e) { console.error("Dashboard sync failed", e); }
 }
 setInterval(silentRefreshAdminDashboard, 2000); // Standardized to 2 seconds
 
-document.getElementById('dashActivitySearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#recent-table tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
-        }
-    });
+        });
+    }
 });
 
 function toggleTable(containerId, iconId) {

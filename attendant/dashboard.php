@@ -24,19 +24,25 @@ require_once '../includes/attendant_header.php';
             document.querySelector('#activity-table .table-container').innerHTML = doc.querySelector('#activity-table .table-container').innerHTML;
 
             // Re-apply filter after background sync
-             const filterInput = document.getElementById('attendantActivitySearch');
-            if (filterInput && filterInput.value) {
-                let filter = filterInput.value.toLowerCase();
-                document.querySelectorAll('#recent-activity-table tbody tr').forEach(row => {
-                    if (row.cells.length > 1) {
-                        if (filter === "") {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            document.querySelectorAll('.table-filter').forEach(input => {
+                if (input.value) {
+                    let filter = input.value.toLowerCase();
+                    let tableId = input.getAttribute('data-table');
+                    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                        if (row.cells.length > 1) {
+                            if (filter === "") {
+                                row.style.display = "";
+                            } else {
+                                let isMatch = Array.from(row.cells).some(cell => {
+                                    let text = cell.textContent.toLowerCase().trim();
+                                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                                });
+                                row.style.display = isMatch ? "table-row" : "none";
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         } catch (e) { 
             if (e.name !== 'AbortError') console.error("Data sync failed", e); 
         }
@@ -202,7 +208,7 @@ $success = $_GET['success'] ?? null;
                     <h3 style="margin: 0; font-size: 1.1rem;">Today's Recent Activities</h3>
                 </div>
                 <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
-                    <input type="text" id="attendantActivitySearch" placeholder="Filter activities..." 
+                    <input type="text" id="attendantActivitySearch" class="table-filter" data-table="recent-activity-table" placeholder="Filter activities..." 
                            style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
                 </div>
             </div>
@@ -254,19 +260,21 @@ $success = $_GET['success'] ?? null;
 </div>
 
 <script>
-document.getElementById('attendantActivitySearch')?.addEventListener('keyup', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#recent-activity-table tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

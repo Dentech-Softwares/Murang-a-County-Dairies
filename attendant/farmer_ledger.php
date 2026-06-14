@@ -133,8 +133,11 @@ document.getElementById('ledgerTableSearch')?.addEventListener('input', function
     const filter = this.value.toLowerCase();
     const rows = document.querySelectorAll('#ledgerTable tbody tr');
     rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
+        let isMatch = Array.from(row.cells).some(cell => {
+            let text = cell.textContent.toLowerCase().trim();
+            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+        });
+        row.style.display = isMatch ? "" : "none";
     });
 });
 </script>

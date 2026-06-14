@@ -640,7 +640,11 @@ function applyTableFilters() {
                 if (filter === "") {
                     row.style.display = "";
                 } else {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    let isMatch = Array.from(row.cells).some(cell => {
+                        let text = cell.textContent.toLowerCase().trim();
+                        return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                    });
+                    row.style.display = isMatch ? "table-row" : "none";
                 }
             }
         });

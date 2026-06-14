@@ -184,7 +184,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
                 <h3 style="margin: 0;">Attendants List</h3>
             </div>
             <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;" onclick="event.stopPropagation()">
-                <input type="text" id="attendantSearch" placeholder="Filter attendants..." style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+                <input type="text" id="attendantSearch" class="table-filter" data-table="attendants-list-table" placeholder="Filter attendants..." style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
                 <form action="" method="GET" style="display: flex; align-items: center; gap: 10px;">
                     <label style="font-size: 0.9rem; color: #666;">Filter Dairy:</label>
                     <select name="dairy_id" onchange="this.form.submit()" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #ddd; background: white; font-size: 0.85rem; cursor: pointer;">
@@ -240,18 +240,17 @@ if (isset($_GET['success'])) $success = $_GET['success'];
 </div>
 
 <script>
-document.getElementById('attendantSearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#attendants-list-table tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                row.style.display = (filter === "") ? "" : (row.textContent.toLowerCase().includes(filter) ? "table-row" : "none");
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

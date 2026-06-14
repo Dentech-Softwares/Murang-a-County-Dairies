@@ -11,6 +11,11 @@ function cleanKenyanPhone($phone) {
     // Strip out any non-numeric characters (spaces, dashes, etc.)
     $phone = preg_replace('/[^0-9]/', '', $phone);
 
+    // Handle the common mistake of '25407...' (country code + leading zero)
+    if (substr($phone, 0, 4) === '2540') {
+        $phone = '254' . substr($phone, 4);
+    }
+
     // If it starts with local '0', swap it with '254'
     if (substr($phone, 0, 1) === '0') {
         $phone = '254' . substr($phone, 1);

@@ -289,10 +289,12 @@ async function silentRefreshAdminSales() {
                 let filter = input.value.toLowerCase();
                 let tableId = input.getAttribute('data-table');
                 document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
-                    if (filter === "") {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+                    if (row.cells.length > 1) {
+                        let isMatch = Array.from(row.cells).some(cell => {
+                            let text = cell.textContent.toLowerCase().trim();
+                            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                        });
+                        row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
                     }
                 });
             }
@@ -309,10 +311,12 @@ document.addEventListener('input', function(e) {
         let tableId = e.target.getAttribute('data-table');
         let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
         rows.forEach(row => {
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
         });
     }

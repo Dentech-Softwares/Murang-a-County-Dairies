@@ -64,7 +64,7 @@ $collections = $stmt->fetchAll();
             <h3 style="margin: 0; font-size: 1.1rem;">Today's Collection Summary</h3>
         </div>
         <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;" onclick="event.stopPropagation()">
-            <input type="text" id="milkSummarySearch" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
+            <input type="text" id="milkSummarySearch" class="table-filter" data-table="milk-summary-table" placeholder="Filter summary..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 180px;">
             <div style="display: flex; gap: 5px;">
                 <a href="?export=1&format=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                     <i class="fas fa-file-excel"></i> CSV
@@ -131,29 +131,40 @@ async function silentRefreshAdminMilk() {
         if (newTable) document.querySelector('#milk-collapsible .table-container').innerHTML = newTable.innerHTML;
 
         // Re-apply filter
-        const filterInput = document.getElementById('milkSummarySearch');
-        if (filterInput && filterInput.value) {
-            let filter = filterInput.value.toLowerCase();
-            document.querySelectorAll('#milk-summary-table tbody tr').forEach(row => {
-                row.style.display = row.cells.length > 1 && row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-            });
-        }
+        document.querySelectorAll('.table-filter').forEach(input => {
+            if (input.value) {
+                let filter = input.value.toLowerCase();
+                let tableId = input.getAttribute('data-table');
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    if (row.cells.length > 1) {
+                        let isMatch = Array.from(row.cells).some(cell => {
+                            let text = cell.textContent.toLowerCase().trim();
+                            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                        });
+                        row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
+                    }
+                });
+            }
+        });
     } catch (e) { console.error("Milk records sync failed:", e); }
 }
 setInterval(silentRefreshAdminMilk, 1000); // Updated to 1 second for real-time updates
 
-document.getElementById('milkSummarySearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#milk-summary-table tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

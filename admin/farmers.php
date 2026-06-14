@@ -20,7 +20,7 @@ $farmers = $stmt->fetchAll();
             <h3 style="margin: 0;">Farmers List</h3>
         </div>
         <div style="flex-grow: 1; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
-            <input type="text" id="adminFarmerSearch" placeholder="Search farmers by any attribute..." 
+            <input type="text" id="adminFarmerSearch" class="table-filter" data-table="adminFarmerTable" placeholder="Search farmers by any attribute..." 
                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #ddd; width: 100%; max-width: 300px; font-size: 0.9rem;">
         </div>
     </div>
@@ -80,45 +80,40 @@ async function silentRefreshAdminFarmers() {
         document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
 
         // Re-apply filter after background sync
-        const filterInput = document.getElementById('adminFarmerSearch');
-        if (filterInput && filterInput.value) {
-            let filter = filterInput.value.toLowerCase();
-            document.querySelectorAll('#adminFarmerTable tbody tr').forEach(row => {
-                if (row.cells.length > 1) { // Skip "No records" row
-                    if (filter === "") {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
+        document.querySelectorAll('.table-filter').forEach(input => {
+            if (input.value) {
+                let filter = input.value.toLowerCase();
+                let tableId = input.getAttribute('data-table');
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    if (row.cells.length > 1) {
+                        let isMatch = Array.from(row.cells).some(cell => {
+                            let text = cell.textContent.toLowerCase().trim();
+                            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                        });
+                        row.style.display = isMatch ? "table-row" : "none";
                     }
-                }
-            });
-        }
+                });
+            }
+        });
+    } catch (e) { console.error("Farmer sync failed", e); }
 }
 setInterval(silentRefreshAdminFarmers, 2000); // Standardized to 2 seconds
 
-function toggleTable(containerId, iconId) {
-    const container = document.getElementById(containerId);
-    const icon = document.getElementById(iconId);
-    if (container && icon) {
-        container.classList.toggle('expanded');
-        icon.style.transform = container.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
-    }
-}
-
-document.getElementById('adminFarmerSearch').addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#adminFarmerTable tbody tr');
-    
-    rows.forEach(row => {
-        if (row.cells.length > 1) { // Skip "No records" row
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

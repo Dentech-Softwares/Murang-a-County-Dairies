@@ -95,7 +95,7 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
             <h3 style="margin: 0;">Manage Attendant Accounts</h3>
         </div>
         <div style="flex-grow: 1; display: flex; justify-content: flex-end; padding-right: 1.5rem;" onclick="event.stopPropagation()">
-            <input type="text" id="attendantAccSearch" placeholder="Filter accounts..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
+            <input type="text" id="attendantAccSearch" class="table-filter" data-table="attendantAccTable" placeholder="Filter accounts..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
         </div>
     </div>
 
@@ -130,19 +130,21 @@ $attendants = $pdo->query("SELECT a.*, d.name as dairy_name FROM attendants a JO
 </div>
 
 <script>
-document.getElementById('attendantAccSearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#attendantAccTable tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = filter === "" || isMatch ? "table-row" : "none";
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

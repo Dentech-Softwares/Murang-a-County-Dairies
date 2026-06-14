@@ -151,7 +151,7 @@ if (isset($_GET['success'])) $success = $_GET['success'];
             <h3 style="margin: 0;">All Dairies</h3>
         </div>
         <div style="flex-grow: 1; display: flex; justify-content: flex-end; padding-right: 1.5rem;" onclick="event.stopPropagation()">
-            <input type="text" id="dairySearch" placeholder="Filter dairies..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
+            <input type="text" id="dairySearch" class="table-filter" data-table="dairies-list-table" placeholder="Filter dairies..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;">
         </div>
     </div>
 
@@ -211,30 +211,40 @@ async function silentRefreshAdminDairies() {
         if (container && newContainer) container.innerHTML = newContainer.innerHTML;
 
         // Re-apply filter
-        const filterInput = document.getElementById('dairySearch');
-        if (filterInput && filterInput.value) {
-            let filter = filterInput.value.toLowerCase();
-            document.querySelectorAll('#dairies-list-table tbody tr').forEach(row => {
-                row.style.display = row.cells.length > 1 && row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-            });
-        }
+        document.querySelectorAll('.table-filter').forEach(input => {
+            if (input.value) {
+                let filter = input.value.toLowerCase();
+                let tableId = input.getAttribute('data-table');
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    if (row.cells.length > 1) {
+                        let isMatch = Array.from(row.cells).some(cell => {
+                            let text = cell.textContent.toLowerCase().trim();
+                            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                        });
+                        row.style.display = isMatch ? "table-row" : "none";
+                    }
+                });
+            }
+        });
     } catch (e) { console.error("Dairy sync failed:", e); }
 }
 setInterval(silentRefreshAdminDairies, 2000); // Standardized to 2 seconds
 
-document.getElementById('dairySearch')?.addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#dairies-list-table tbody tr');
-    rows.forEach(row => {
-        if (row.cells.length > 1) {
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('table-filter')) {
+        let filter = e.target.value.toLowerCase();
+        let tableId = e.target.getAttribute('data-table');
+        let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = filter === "" || isMatch ? "table-row" : "none";
             }
-        }
-    });
+        });
+    }
 });
 </script>
 

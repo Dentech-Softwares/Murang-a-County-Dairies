@@ -438,7 +438,7 @@ $daily_profit = $daily_revenue - $daily_cost;
                     <h3 style="margin: 0; font-size: 1.1rem;">Farmer Collection Report</h3>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: flex-end;">
-                    <input type="text" id="farmerSearch" placeholder="Filter farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;" onclick="event.stopPropagation()">
+                    <input type="text" id="farmerSearch" class="table-filter" data-table="farmerTable" placeholder="Filter farmers..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 100%; max-width: 200px;" onclick="event.stopPropagation()">
                     <div style="display: flex; gap: 5px;" onclick="event.stopPropagation()">
                         <a href="?export=farmer_collections&date=<?php echo urlencode($date_filter); ?>&format=csv" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none;">
                             <i class="fas fa-file-excel"></i> CSV
@@ -517,28 +517,16 @@ async function silentRefreshReports() {
                 let tableId = input.getAttribute('data-table');
                 document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
                     if (row.cells.length > 1) {
-                        if (filter === "") {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                        }
+                        let isMatch = Array.from(row.cells).some(cell => {
+                            let text = cell.textContent.toLowerCase().trim();
+                            return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                        });
+                        row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
                     }
                 });
             }
         });
-        const fSearch = document.getElementById('farmerSearch');
-        if (fSearch && fSearch.value) {
-            let filter = fSearch.value.toLowerCase();
-            document.querySelectorAll('#farmerTable tbody tr').forEach(row => {
-                if (row.cells.length > 1) {
-                    if (filter === "") {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                    }
-                }
-            });
-        }
+        
     } catch (e) { console.error("Admin report sync failed", e); }
 }
 setInterval(silentRefreshReports, 30000); // Changed to 30 seconds to reduce server load
@@ -550,30 +538,14 @@ document.addEventListener('input', function(e) {
         let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
         rows.forEach(row => {
             if (row.cells.length > 1) {
-                if (filter === "") {
-                    row.style.display = "";
-                } else {
-                    row.style.display = row.textContent.toLowerCase().includes(filter) ? "table-row" : "none";
-                }
+                let isMatch = Array.from(row.cells).some(cell => {
+                    let text = cell.textContent.toLowerCase().trim();
+                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                });
+                row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }
         });
     }
-});
-
-document.getElementById('farmerSearch').addEventListener('input', function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#farmerTable tbody tr');
-    
-    rows.forEach(row => {
-        if (row.cells.length > 1) { // Skip "No records" row
-            let text = row.textContent.toLowerCase();
-            if (filter === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = text.includes(filter) ? "table-row" : "none";
-            }
-        }
-    });
 });
 
 function toggleTable(containerId, iconId) {

@@ -344,7 +344,7 @@
     }
 
     .data-table tr {
-        display: table-row !important;
+        display: table-row;
     }
 
     .data-table td, .data-table th, table td, table th {
@@ -518,10 +518,10 @@
     }
 
     .extra-row {
-        display: none !important;
+        display: none;
     }
     .expanded .extra-row {
-        display: table-row !important;
+        display: table-row;
     }
 
     /* 8. NEW MOBILE ADJUSTMENTS */
