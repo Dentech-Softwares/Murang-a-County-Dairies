@@ -136,7 +136,7 @@ $farmers = $stmt->fetchAll();
             if (typeof applyTableFilters === 'function') applyTableFilters();
         } catch (e) { console.error("Farmer sync failed", e); }
     }
-    setInterval(silentRefreshFarmers, 2000); // Standardized to 2 seconds
+    setInterval(silentRefreshFarmers, 15000); // Refresh every 15 seconds
 </script>
 
 <?php if ($success): ?>
@@ -241,11 +241,12 @@ function applyTableFilters() {
         rows.forEach(row => {
             if (row.cells.length > 1) {
                 let isMatch = Array.from(row.cells).some(cell => {
-                    // Get clean text from the cell
-                    let text = cell.innerText.toLowerCase().trim();
-                    // Match if the cell text starts with the filter 
-                    // OR if any individual word in the cell starts with the filter
-                    return text.startsWith(filter) || text.split(/[\s-]+/).some(word => word.startsWith(filter));
+                    let text = cell.textContent.toLowerCase().trim();
+                    // Precise match logic:
+                    // 1. Does the whole cell start with the search?
+                    // 2. Does any word (separated by space/dash) start with the search?
+                    return text.startsWith(filter) || 
+                           text.split(/[\s-]+/).some(word => word.startsWith(filter));
                 });
                 row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }

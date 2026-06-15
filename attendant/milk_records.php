@@ -179,7 +179,7 @@ $service = new ReportService($pdo);
             applyTableFilters();
         } catch (e) { console.error("Records sync failed", e); }
     }
-    setInterval(silentRefreshRecords, 2000); // Standardized to 2 seconds
+    setInterval(silentRefreshRecords, 15000); // Refresh every 15 seconds
 </script>
 
 <?php

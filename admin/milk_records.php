@@ -148,7 +148,7 @@ async function silentRefreshAdminMilk() {
         });
     } catch (e) { console.error("Milk records sync failed:", e); }
 }
-setInterval(silentRefreshAdminMilk, 1000); // Updated to 1 second for real-time updates
+setInterval(silentRefreshAdminMilk, 15000); // Refresh every 15 seconds
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

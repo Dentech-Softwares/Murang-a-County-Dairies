@@ -47,7 +47,7 @@ require_once '../includes/attendant_header.php';
             if (e.name !== 'AbortError') console.error("Data sync failed", e); 
         }
     }
-    setInterval(silentRefresh, 2000); // Optimized interval
+    setInterval(silentRefresh, 15000); // Refresh every 15 seconds
 
     function toggleTable(containerId, iconId) {
         const container = document.getElementById(containerId);

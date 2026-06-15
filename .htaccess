@@ -1,0 +1,4 @@
+RewriteEngine On
+
+# Route for Bulk Farmer Ledger PDF
+RewriteRule ^attendant/reports/bulk-statements/([0-9]{4}-[0-9]{2})$ attendant/report_print_attendant.php?export=bulk_farmer_ledger&month=$1 [L,QSA]

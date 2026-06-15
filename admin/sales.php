@@ -303,7 +303,7 @@ async function silentRefreshAdminSales() {
         if (e.name !== 'AbortError') console.error("Sales sync failed", e); 
     }
 }
-setInterval(silentRefreshAdminSales, 2000);
+setInterval(silentRefreshAdminSales, 15000);
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

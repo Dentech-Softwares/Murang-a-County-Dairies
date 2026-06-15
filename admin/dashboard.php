@@ -39,8 +39,6 @@ $stmt = $pdo->query("SELECT
                             COALESCE((SELECT SUM(quantity) FROM milk_sales WHERE dairy_id = d.id), 0)
                         ) as available_quantity
                     FROM dairies d 
-                    WHERE EXISTS (SELECT 1 FROM milk_collection WHERE dairy_id = d.id AND DATE(date_collected) = CURDATE())
-                       OR EXISTS (SELECT 1 FROM milk_sales WHERE dairy_id = d.id AND DATE(date_sold) = CURDATE())
                     ORDER BY d.name ASC");
 $daily_dairy_summary = $stmt->fetchAll();
 
@@ -67,8 +65,8 @@ for ($i = 6; $i >= 0; $i--) {
 }
 ?>
 
-<!-- Add Chart.js Library -->
-<script src="../assets/js/chart.js"></script>
+<!-- Add Chart.js Library from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
 <h2>Dashboard Overview</h2>
 
@@ -237,7 +235,7 @@ async function silentRefreshAdminDashboard() {
             });
         } catch (e) { console.error("Dashboard sync failed", e); }
 }
-setInterval(silentRefreshAdminDashboard, 2000); // Standardized to 2 seconds
+setInterval(silentRefreshAdminDashboard, 15000); // Refresh every 15 seconds
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

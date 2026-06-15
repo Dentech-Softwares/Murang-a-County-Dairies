@@ -228,7 +228,7 @@ async function silentRefreshAdminDairies() {
         });
     } catch (e) { console.error("Dairy sync failed:", e); }
 }
-setInterval(silentRefreshAdminDairies, 2000); // Standardized to 2 seconds
+setInterval(silentRefreshAdminDairies, 15000); // Refresh every 15 seconds
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

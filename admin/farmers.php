@@ -97,7 +97,7 @@ async function silentRefreshAdminFarmers() {
         });
     } catch (e) { console.error("Farmer sync failed", e); }
 }
-setInterval(silentRefreshAdminFarmers, 2000); // Standardized to 2 seconds
+setInterval(silentRefreshAdminFarmers, 15000); // Refresh every 15 seconds
 
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('table-filter')) {

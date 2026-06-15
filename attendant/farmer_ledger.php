@@ -4,6 +4,61 @@ require_once '../includes/attendant_header.php';
 $dairy_id = $_SESSION['dairy_id'];
 $farmer_id = $_GET['farmer_id'] ?? '';
 $month_filter = $_GET['month'] ?? date('Y-m');
+$export = $_GET['export'] ?? '';
+
+if ($export && $farmer_id && $month_filter) {
+    // Get selected farmer info
+    $stmt = $pdo->prepare("SELECT * FROM farmers WHERE id = ? AND dairy_id = ?");
+    $stmt->execute([$farmer_id, $dairy_id]);
+    $selected_farmer = $stmt->fetch();
+
+    if ($selected_farmer) {
+        // Get collections for specific month
+        $stmt = $pdo->prepare("SELECT mc.*, a.full_name as attendant_name 
+                              FROM milk_collection mc 
+                              LEFT JOIN attendants a ON mc.attendant_id = a.id
+                              WHERE mc.farmer_id = ? AND DATE_FORMAT(mc.date_collected, '%Y-%m') = ? 
+                              ORDER BY mc.date_collected ASC");
+        $stmt->execute([$farmer_id, $month_filter]);
+        $ledger_data = $stmt->fetchAll();
+
+        if ($export == 'csv') {
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="farmer_ledger_' . $selected_farmer['farmer_number'] . '_' . $month_filter . '.csv"');
+            $output = fopen('php://output', 'w');
+            
+            // Header row
+            fputcsv($output, ['Farmer Name', $selected_farmer['full_name'], 'Farmer Number', $selected_farmer['farmer_number']]);
+            fputcsv($output, ['Month', date('F Y', strtotime($month_filter . '-01'))]);
+            fputcsv($output, []);
+            fputcsv($output, ['Date', 'Quantity (Ltrs)', 'Rate (Kes)', 'Total Amount', 'Recorded By']);
+            
+            $total_qty = 0;
+            $total_amt = 0;
+            foreach ($ledger_data as $row) {
+                $total_qty += $row['quantity'];
+                $total_amt += $row['total_price'];
+                fputcsv($output, [
+                    date('d-M-Y H:i', strtotime($row['date_collected'])),
+                    $row['quantity'],
+                    $row['price_per_litre'],
+                    $row['total_price'],
+                    $row['attendant_name'] ?? 'System'
+                ]);
+            }
+            
+            // Total row
+            fputcsv($output, []);
+            fputcsv($output, ['MONTH TOTAL', $total_qty, '-', $total_amt, '']);
+            
+            fclose($output);
+            exit;
+        } elseif ($export == 'pdf') {
+            header('Location: report_print_attendant.php?export=farmer_ledger&farmer_id=' . $farmer_id . '&month=' . $month_filter);
+            exit;
+        }
+    }
+}
 
 // Get all active farmers for the dropdown
 $stmt = $pdo->prepare("SELECT id, full_name, farmer_number FROM farmers WHERE dairy_id = ? AND status = 'active' ORDER BY farmer_number ASC");
@@ -66,11 +121,22 @@ if ($farmer_id) {
                 <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #666;">Ledger for <?php echo date('F Y', strtotime($month_filter . '-01')); ?></p>
             </div>
             
-            <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-grow: 1; justify-content: flex-end;">
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;">
                 <div class="search-input-container" style="position: relative; max-width: 250px; width: 100%;">
                     <input type="text" id="ledgerTableSearch" placeholder="Filter by date or amount..." 
                            style="width: 100%; padding: 0.6rem; padding-left: 2.2rem; border-radius: 8px; border: 1px solid #ddd;">
                     <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                </div>
+                <div class="export-buttons" style="display: flex; gap: 5px;">
+                    <a href="?farmer_id=<?php echo $farmer_id; ?>&month=<?php echo $month_filter; ?>&export=csv" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-file-excel"></i> CSV
+                    </a>
+                    <a href="?farmer_id=<?php echo $farmer_id; ?>&month=<?php echo $month_filter; ?>&export=pdf" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #d32f2f; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                    <a href="reports/bulk-statements/<?php echo $month_filter; ?>" class="btn btn-primary" style="width: auto; padding: 0.35rem 0.7rem; font-size: 0.7rem; text-decoration: none; background: #2c3e50; display: flex; align-items: center; gap: 5px;" title="Export all farmers for this month">
+                        <i class="fas fa-users-cog"></i> Export All (PDF)
+                    </a>
                 </div>
             </div>
         </div>
