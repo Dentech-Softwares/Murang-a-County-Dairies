@@ -343,10 +343,6 @@
         display: table-header-group !important;
     }
 
-    .data-table tr {
-        display: table-row;
-    }
-
     .data-table td, .data-table th, table td, table th {
         display: table-cell !important;
         padding: 12px 10px !important;

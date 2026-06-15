@@ -36,6 +36,11 @@ $error = '';
 require_once '../includes/attendant_header.php';
 $dairy_id = $_SESSION['dairy_id'];
 
+// Fetch dairy name for SMS notifications
+$stmt_d = $pdo->prepare("SELECT name FROM dairies WHERE id = ?");
+$stmt_d->execute([$dairy_id]);
+$dairy_name = $stmt_d->fetchColumn();
+
 // Handle Deletion
 if (isset($_GET['delete'])) {
     $delete_id = $_GET['delete'];
@@ -128,7 +133,7 @@ $farmers = $stmt->fetchAll();
             document.querySelector('#farmers-collapsible .table-container').innerHTML = doc.querySelector('#farmers-collapsible .table-container').innerHTML;
 
             // Re-apply filters after background sync
-            applyTableFilters();
+            if (typeof applyTableFilters === 'function') applyTableFilters();
         } catch (e) { console.error("Farmer sync failed", e); }
     }
     setInterval(silentRefreshFarmers, 2000); // Standardized to 2 seconds
@@ -236,8 +241,11 @@ function applyTableFilters() {
         rows.forEach(row => {
             if (row.cells.length > 1) {
                 let isMatch = Array.from(row.cells).some(cell => {
-                    let text = cell.textContent.toLowerCase().trim();
-                    return text.startsWith(filter) || text.split(/\s+/).some(word => word.startsWith(filter));
+                    // Get clean text from the cell
+                    let text = cell.innerText.toLowerCase().trim();
+                    // Match if the cell text starts with the filter 
+                    // OR if any individual word in the cell starts with the filter
+                    return text.startsWith(filter) || text.split(/[\s-]+/).some(word => word.startsWith(filter));
                 });
                 row.style.display = (filter === "") ? "" : (isMatch ? "table-row" : "none");
             }

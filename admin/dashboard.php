@@ -2,6 +2,9 @@
 require_once '../includes/db_connect.php';
 require_once '../includes/admin_header.php';
 
+// Ensure consistent timezone for date-based chart trends
+date_default_timezone_set('Africa/Nairobi');
+
 // Handle Export
 if (isset($_GET['export'])) {
     $format = $_GET['format'] ?? 'csv';
@@ -10,6 +13,9 @@ if (isset($_GET['export'])) {
         exit();
     }
 }
+
+// Calculate date threshold for 7-day trend
+$sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
 
 // Stats queries
 $total_dairies = $pdo->query("SELECT COUNT(*) FROM dairies")->fetchColumn();
@@ -39,10 +45,12 @@ $stmt = $pdo->query("SELECT
 $daily_dairy_summary = $stmt->fetchAll();
 
 // Data for Chart.js Trends (Last 7 Days)
-$stmt = $pdo->query("SELECT DATE(date_collected) as d, SUM(quantity) as q FROM milk_collection WHERE date_collected >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$stmt = $pdo->prepare("SELECT DATE(date_collected) as d, SUM(quantity) as q FROM milk_collection WHERE DATE(date_collected) >= ? GROUP BY d ORDER BY d ASC");
+$stmt->execute([$sevenDaysAgo]);
 $col_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$stmt = $pdo->query("SELECT DATE(date_sold) as d, SUM(quantity) as q FROM milk_sales WHERE date_sold >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d ASC");
+$stmt = $pdo->prepare("SELECT DATE(date_sold) as d, SUM(quantity) as q FROM milk_sales WHERE DATE(date_sold) >= ? GROUP BY d ORDER BY d ASC");
+$stmt->execute([$sevenDaysAgo]);
 $sale_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $chart_labels = [];
@@ -183,7 +191,10 @@ async function silentRefreshAdminDashboard() {
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
-        document.querySelector('.stats-grid').innerHTML = doc.querySelector('.stats-grid').innerHTML;
+        const newStats = doc.querySelector('.stats-grid');
+        if (newStats) {
+            document.querySelector('.stats-grid').innerHTML = newStats.innerHTML;
+        }
         
         // Update Activities Table only if it's not empty in the new document
         const newTableContainer = doc.querySelector('#collapsible-table .table-container');
